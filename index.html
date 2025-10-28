@@ -530,7 +530,7 @@ tabBtns.forEach(btn=>{
     if(tab==="reservations") loadReservationsTable();
     if(tab==="times"){
       if(currentRoleForPanel==="admin"){ loadTimeSettingsAdminUI(); }
-      else { buildTrainerDayGrid(); loadTrainerScheduleIntoGrid(); }
+      else { buildTrainerDayGrid(); }
     }
     if(tab==="notices" && currentRoleForPanel==="admin") loadAdminNotices();
     if(tab==="roles" && currentRoleForPanel==="admin") loadRoles();
@@ -784,6 +784,7 @@ init();
 </script>
 </body>
 </html>
+
 
 
 
