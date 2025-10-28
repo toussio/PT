@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>PT 트레이너 예약 시스템</title>
 <style>
 :root{
@@ -75,10 +75,17 @@ display:flex;align-items:center;justify-content:center;font-weight:600;}
 button.reserve-btn{width:85%;background:var(--grad);color:#fff;border:none;border-radius:24px;padding:16px 18px;font-size:17px;font-weight:700;cursor:pointer;}
 button.reserve-btn:disabled{opacity:.6;cursor:not-allowed}
 
+/* 트레이너 시간설정: 요일 세로표 */
+.day-column{border:1px solid #ffd6a5;border-radius:12px;padding:10px;background:#fffaf3;min-width:150px}
+.day-column h4{margin:6px 0 10px;color:#b45309}
+.time-chip{display:flex;align-items:center;gap:6px;background:#fff;border:1px solid #ffd6a5;border-radius:10px;padding:6px 8px;margin:4px 0;}
+.time-grid{display:flex;gap:12px;flex-wrap:wrap}
+
 /* 토스트 */
 .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#fff8ee;color:var(--ink);border:2px solid #ffd6a5;border-radius:14px;
 padding:12px 24px;font-weight:600;font-size:15px;box-shadow:0 4px 15px rgba(249,115,22,0.2);animation:fadeInOut 3s ease forwards;}
 @keyframes fadeInOut{0%{opacity:0;transform:translate(-50%,20px);}10%,90%{opacity:1;transform:translate(-50%,0);}100%{opacity:0;transform:translate(-50%,20px);}}
+@keyframes fadeInMain{from{opacity:0}to{opacity:1}}
 @keyframes fadePop{from{opacity:0;transform:scale(0.9);}to{opacity:1;transform:scale(1);}}
 </style>
 </head>
@@ -134,12 +141,13 @@ padding:12px 24px;font-weight:600;font-size:15px;box-shadow:0 4px 15px rgba(249,
 <div class="admin-modal" id="adminModal">
   <div class="admin-content">
     <span class="admin-close" id="adminClose">✕</span>
-    <h2>⚙ 관리자/트레이너 패널</h2>
-    <div class="tab-btns">
+    <h2 id="panelTitle">⚙ 관리자/트레이너 패널</h2>
+
+    <div class="tab-btns" id="tabBtns">
       <button class="tab-btn" data-tab="reservations">예약관리</button>
       <button class="tab-btn" data-tab="times">시간설정</button>
-      <button class="tab-btn" data-tab="notices">공지관리</button>
-      <button class="tab-btn" data-tab="roles">권한관리</button>
+      <button class="tab-btn admin-only" data-tab="notices">공지관리</button>
+      <button class="tab-btn admin-only" data-tab="roles">권한관리</button>
     </div>
 
     <!-- 예약 관리 -->
@@ -151,15 +159,24 @@ padding:12px 24px;font-weight:600;font-size:15px;box-shadow:0 4px 15px rgba(249,
       </table>
     </div>
 
-    <!-- 시간 설정 -->
+    <!-- 시간 설정 (관리자: 전체 / 트레이너: 본인만 요일 세로표) -->
     <div class="tab-content" id="tab-times">
-      <h3>🕒 트레이너별 시간 설정</h3>
-      <p style="margin:6px 0 12px;color:#7b5d49">체크한 시간만 유저 캘린더에 노출됩니다.</p>
-      <div id="trainerTimeList"></div>
-      <button id="applyTimes" class="tab-btn" style="margin-top:12px">적용</button>
+      <div id="timesAdminBlock" style="display:none">
+        <h3>🕒 트레이너별 시간 설정(관리자)</h3>
+        <p style="margin:6px 0 12px;color:#7b5d49">체크한 시간만 유저 캘린더에 노출됩니다.</p>
+        <div id="trainerTimeList"></div>
+        <button id="applyTimesAdmin" class="tab-btn" style="margin-top:12px">적용</button>
+      </div>
+
+      <div id="timesTrainerBlock" style="display:none">
+        <h3>🕒 나의 시간 설정(트레이너)</h3>
+        <p style="margin:6px 0 12px;color:#7b5d49">요일을 기준으로 체크한 시간만 예약 가능하게 됩니다.</p>
+        <div class="time-grid" id="trainerDayGrid"></div>
+        <button id="applyTimesTrainer" class="tab-btn" style="margin-top:12px">적용</button>
+      </div>
     </div>
 
-    <!-- 공지 관리 -->
+    <!-- 공지 관리 (관리자 전용) -->
     <div class="tab-content" id="tab-notices">
       <h3>📢 공지사항 관리</h3>
       <input id="newNotice" placeholder="공지 내용을 입력하세요" style="width:70%;padding:8px;border:2px solid #ffd6a5;border-radius:10px;">
@@ -167,7 +184,7 @@ padding:12px 24px;font-weight:600;font-size:15px;box-shadow:0 4px 15px rgba(249,
       <ul id="adminNoticeList"></ul>
     </div>
 
-    <!-- 권한 관리 -->
+    <!-- 권한 관리 (관리자 전용) -->
     <div class="tab-content" id="tab-roles">
       <h3>🧑‍💼 권한 관리</h3>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
@@ -217,7 +234,6 @@ let currentTrainer = 0;
 let selectedDate = null;
 let bookings = []; // {id, userId, nickname, trainer, date, time, status}
 
-/* 트레이너 목록 */
 const trainers = [
   {name:"트레이너 A",photo:"https://via.placeholder.com/260x180?text=A",intro:"체형 교정 전문가"},
   {name:"트레이너 B",photo:"https://via.placeholder.com/260x180?text=B",intro:"다이어트 코치"},
@@ -225,33 +241,32 @@ const trainers = [
   {name:"트레이너 D",photo:"https://via.placeholder.com/260x180?text=D",intro:"재활 트레이너"}
 ];
 
-/* 시간 후보(분단위 커스텀 원하면 여기서 확장) */
 const allTimes = ["08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00"];
+const daysKo = ["일","월","화","수","목","금","토"];
 
 /* =======================
-      엘리먼트 참조
+      엘리먼트
 ======================= */
 const intro = document.getElementById("intro");
 const main = document.getElementById("main");
 const startBtn = document.getElementById("startBtn");
 
 const trainerCard = document.getElementById("trainerCard");
+const trainerTitle = document.getElementById("trainerTitle");
 const calendar = document.getElementById("calendar");
 const timeSelect = document.getElementById("timeSelect");
 const reserveBtn = document.getElementById("reserveBtn");
-const trainerTitle = document.getElementById("trainerTitle");
-
-const adminBtn = document.getElementById("adminBtn");
-const adminModal = document.getElementById("adminModal");
-const adminClose = document.getElementById("adminClose");
-const adminTable = document.getElementById("adminTable");
 
 const noticeBtn = document.getElementById("noticeBtn");
 const noticeModal = document.getElementById("noticeModal");
 const noticeClose = document.getElementById("noticeClose");
 const noticeList = document.getElementById("noticeList");
 
-// Admin tabs
+const adminBtn = document.getElementById("adminBtn");
+const adminModal = document.getElementById("adminModal");
+const adminClose = document.getElementById("adminClose");
+const panelTitle = document.getElementById("panelTitle");
+const adminTable = document.getElementById("adminTable");
 const tabBtns = document.querySelectorAll(".tab-btn");
 const tabReservations = document.getElementById("tab-reservations");
 const tabTimes = document.getElementById("tab-times");
@@ -260,9 +275,12 @@ const tabRoles = document.getElementById("tab-roles");
 const trainerTimeList = document.getElementById("trainerTimeList");
 const adminNoticeList = document.getElementById("adminNoticeList");
 const roleTable = document.getElementById("roleTable");
+const timesAdminBlock = document.getElementById("timesAdminBlock");
+const timesTrainerBlock = document.getElementById("timesTrainerBlock");
+const trainerDayGrid = document.getElementById("trainerDayGrid");
 
 /* =======================
-      공통 유틸
+      유틸
 ======================= */
 function showToast(msg){
   const t=document.createElement("div");
@@ -271,8 +289,14 @@ function showToast(msg){
   setTimeout(()=>t.remove(),3000);
 }
 
+function getWeekdayKo(yyyymmdd){ // "2025-10-3" ↦ "금" 같은
+  const [y,m,d] = yyyymmdd.split("-").map(Number);
+  const w = new Date(y, m-1, d).getDay();
+  return daysKo[w];
+}
+
 /* =======================
-      로그인(인트로)
+      로그인
 ======================= */
 startBtn.onclick = async () => {
   const id = document.getElementById("userId").value.trim();
@@ -280,7 +304,6 @@ startBtn.onclick = async () => {
   if(!id || !nick) return showToast("고번과 닉네임을 입력하세요!");
 
   currentUser = { id, nick };
-  // 사용자 기본 role이 없으면 member로 등록/병합
   await setDoc(doc(db,"users",id),{
     nickname:nick, role:"member", updatedAt:new Date()
   }, { merge:true });
@@ -288,8 +311,8 @@ startBtn.onclick = async () => {
   intro.style.opacity="0";
   setTimeout(()=>{ intro.style.display="none"; main.style.display="block"; }, 500);
 
-  await fetchBookings();       // 예약 로드
-  await loadNoticesForUsers(); // 공지 로드
+  await fetchBookings();
+  await loadNoticesForUsers();
   showTrainer(currentTrainer);
 };
 
@@ -319,13 +342,12 @@ function renderCalendar(){
   const y=now.getFullYear(), m=now.getMonth();
   const fd=new Date(y,m,1), ld=new Date(y,m+1,0);
 
-  // 요일 헤더는 상단 .weekdays 로 표시됨
   for(let i=0;i<fd.getDay();i++){
     const sp=document.createElement("div"); calendar.appendChild(sp);
   }
   for(let d=1;d<=ld.getDate();d++){
     const dateObj=new Date(y,m,d);
-    const dateStr = `${y}-${m+1}-${d}`; // zero pad 없이 저장/비교
+    const dateStr = `${y}-${m+1}-${d}`;
     const day=document.createElement("div");
     day.className="day"; day.textContent=d;
 
@@ -340,9 +362,26 @@ function renderCalendar(){
       selectedDate = dateStr;
       updateTimeOptions();
     };
-
     calendar.appendChild(day);
   }
+}
+
+async function getTimesForTrainerAndDate(trainerName, yyyymmdd){
+  // 1) 트레이너 개별 스케줄 우선 (trainerSchedule/{nickname}) 요일 키 사용
+  const weekday = getWeekdayKo(yyyymmdd); // "월"~"일"
+  const docSnap = await getDoc(doc(db,"trainerSchedule",trainerName));
+  if(docSnap.exists()){
+    const data = docSnap.data();
+    if(Array.isArray(data[weekday]) && data[weekday].length) return data[weekday];
+  }
+  // 2) 관리자 전체 설정(settings/trainerTimes) 보조
+  const setSnap = await getDoc(doc(db,"settings","trainerTimes"));
+  if(setSnap.exists()){
+    const arr = setSnap.data()[trainerName];
+    if(Array.isArray(arr) && arr.length) return arr;
+  }
+  // 3) 기본값
+  return allTimes;
 }
 
 async function updateTimeOptions(){
@@ -350,9 +389,7 @@ async function updateTimeOptions(){
   if(!selectedDate){ reserveBtn.disabled=true; return; }
 
   const t = trainers[currentTrainer];
-  // 관리자 설정된 시간 로드
-  const setSnap = await getDoc(doc(db,"settings","trainerTimes"));
-  const availableTimes = setSnap.exists() ? (setSnap.data()[t.name] || allTimes) : allTimes;
+  const availableTimes = await getTimesForTrainerAndDate(t.name, selectedDate);
 
   const bookedTimes = bookings
     .filter(b=>b.trainer===t.name && b.date===selectedDate)
@@ -369,7 +406,7 @@ async function updateTimeOptions(){
   reserveBtn.disabled = !hasAvail;
 }
 
-/* 예약 생성 */
+/* 예약 생성 (하루 1회 제한 제거됨) */
 reserveBtn.onclick = async ()=>{
   if(!currentUser) return showToast("로그인이 필요합니다!");
   if(!selectedDate) return showToast("날짜를 선택하세요!");
@@ -377,14 +414,8 @@ reserveBtn.onclick = async ()=>{
   if(!time) return showToast("시간을 선택하세요!");
 
   const t = trainers[currentTrainer];
-
-  // 중복예약 방지(같은 트레이너/날짜/시간)
   const dup = bookings.find(b=>b.trainer===t.name && b.date===selectedDate && b.time===time);
   if(dup) return showToast("이미 예약된 시간입니다!");
-
-  // 하루 1회 제한(원하면 제거 가능)
-  const dayDup = bookings.find(b=>b.userId===currentUser.id && b.date===selectedDate);
-  if(dayDup) return showToast("하루 1회만 예약 가능합니다!");
 
   await addDoc(collection(db,"reservations"),{
     userId: currentUser.id,
@@ -436,7 +467,7 @@ async function loadNoticesForUsers(){
 }
 
 /* =======================
-      관리자/트레이너 패널
+      패널 열기(관리자/트레이너)
 ======================= */
 adminBtn.onclick = async ()=>{
   if(!currentUser) return showToast("먼저 로그인하세요!");
@@ -459,35 +490,47 @@ function openPanel(role){
   // 탭 초기화
   document.querySelectorAll(".tab-content").forEach(el=>el.style.display="none");
   tabBtns.forEach(b=>b.classList.remove("active"));
+  // 관리/트레이너 전용 버튼 가시성
+  document.querySelectorAll(".admin-only").forEach(el=>{
+    el.style.display = (role==="admin") ? "" : "none";
+  });
 
   if(role==="admin"){
-    // 모든 탭 열람 가능
+    panelTitle.textContent = "⚙ 관리자 패널";
     showTab("reservations");
-    document.querySelector('[data-tab="reservations"]').style.display="";
-    document.querySelector('[data-tab="times"]').style.display="";
-    document.querySelector('[data-tab="notices"]').style.display="";
-    document.querySelector('[data-tab="roles"]').style.display="";
-    loadReservationsTable(); loadTimeSettingsUI(); loadAdminNotices(); loadRoles();
+    loadReservationsTable();
+    // 시간설정 관리자 블록 표시
+    timesAdminBlock.style.display="block";
+    timesTrainerBlock.style.display="none";
+    loadTimeSettingsAdminUI();
+    loadAdminNotices();
+    loadRoles();
   }else{
-    // 트레이너: 예약관리만 (자기 예약만)
+    panelTitle.textContent = "🧑‍🏫 트레이너 패널";
+    // 트레이너는 예약관리 + 시간설정(본인만)
     showTab("reservations");
-    document.querySelector('[data-tab="reservations"]').style.display="";
-    document.querySelector('[data-tab="times"]').style.display="none";
-    document.querySelector('[data-tab="notices"]').style.display="none";
-    document.querySelector('[data-tab="roles"]').style.display="none";
-    loadReservationsTable(); // 내부에서 role에 따라 필터링
+    loadReservationsTable();
+    timesAdminBlock.style.display="none";
+    timesTrainerBlock.style.display="block";
+    buildTrainerDayGrid(); // UI 만들고
+    loadTrainerScheduleIntoGrid(); // 본인 스케줄 로드
   }
 }
 
-// 탭 버튼 핸들러
+// 탭 버튼 동작
 tabBtns.forEach(btn=>{
   btn.onclick = ()=>{
     const tab = btn.getAttribute("data-tab");
+    // 트레이너는 admin-only 탭 진입 차단
+    if(currentRoleForPanel==="trainer" && (tab==="notices"||tab==="roles")) return;
     showTab(tab);
     if(tab==="reservations") loadReservationsTable();
-    if(tab==="times") loadTimeSettingsUI();
-    if(tab==="notices") loadAdminNotices();
-    if(tab==="roles") loadRoles();
+    if(tab==="times"){
+      if(currentRoleForPanel==="admin"){ loadTimeSettingsAdminUI(); }
+      else { buildTrainerDayGrid(); loadTrainerScheduleIntoGrid(); }
+    }
+    if(tab==="notices" && currentRoleForPanel==="admin") loadAdminNotices();
+    if(tab==="roles" && currentRoleForPanel==="admin") loadRoles();
   };
 });
 
@@ -495,19 +538,22 @@ function showTab(tab){
   document.querySelectorAll(".tab-content").forEach(el=>el.style.display="none");
   document.getElementById(`tab-${tab}`).style.display="block";
   tabBtns.forEach(b=>b.classList.remove("active"));
-  document.querySelector(`.tab-btn[data-tab="${tab}"]`).classList.add("active");
+  const tbtn = document.querySelector(`.tab-btn[data-tab="${tab}"]`);
+  if(tbtn) tbtn.classList.add("active");
 }
 
-/* 예약 테이블(관리/트레이너 공용) */
+/* =======================
+      예약 테이블(공용)
+======================= */
 async function loadReservationsTable(){
   adminTable.innerHTML="";
   await fetchBookings();
   const role = currentRoleForPanel;
   const filtered = (role==="trainer")
-    ? bookings.filter(b=>b.trainer===currentUser.nick) // 트레이너 닉네임과 트레이너명 일치 가정
+    ? bookings.filter(b=>b.trainer===currentUser.nick) // 닉네임과 트레이너명 동일 가정
     : bookings;
 
-  // 최근순 정렬(원하면 다른 기준으로)
+  // 최근 날짜/시간 순
   filtered.sort((a,b)=>{
     const ad=new Date(a.date), bd=new Date(b.date);
     if(ad.getTime()===bd.getTime()) return a.time.localeCompare(b.time);
@@ -537,58 +583,105 @@ async function loadReservationsTable(){
       await deleteDoc(doc(db,"reservations",id));
       showToast("예약이 취소되었습니다.");
       loadReservationsTable();
-      fetchBookings(); // 유저 화면 동기화
+      fetchBookings(); // 메인 화면 동기화
     };
   });
 }
 
 /* =======================
-      시간 설정(관리자)
+      시간 설정 - 관리자(기존 멀티 트레이너)
 ======================= */
-async function loadTimeSettingsUI(){
+async function loadTimeSettingsAdminUI(){
   trainerTimeList.innerHTML="";
   const snap = await getDoc(doc(db,"settings","trainerTimes"));
   const data = snap.exists()? snap.data() : {};
 
   trainers.forEach(t=>{
-    const div=document.createElement("div");
-    div.style.cssText="border:1px solid #ffd6a5;border-radius:12px;padding:10px 12px;margin:10px 0;background:#fff";
-    div.innerHTML = `<h4 style="margin:6px 0 8px;color:#b45309">${t.name}</h4>`;
+    const wrap=document.createElement("div");
+    wrap.style.cssText="border:1px solid #ffd6a5;border-radius:12px;padding:10px 12px;margin:10px 0;background:#fff";
+    wrap.innerHTML = `<h4 style="margin:6px 0 8px;color:#b45309">${t.name}</h4>`;
     const box=document.createElement("div");
     box.style.cssText="display:flex;flex-wrap:wrap;gap:8px";
     allTimes.forEach(tm=>{
       const checked = (data[t.name]||[]).includes(tm) ? "checked" : "";
       const label = document.createElement("label");
-      label.style.cssText="background:#fffaf3;border:1px solid #ffd6a5;border-radius:10px;padding:6px 8px;display:flex;gap:6px;align-items:center";
+      label.className="time-chip";
       label.innerHTML = `<input type="checkbox" value="${tm}" ${checked}/> ${tm}`;
       box.appendChild(label);
     });
-    div.appendChild(box);
-    trainerTimeList.appendChild(div);
+    wrap.appendChild(box);
+    trainerTimeList.appendChild(wrap);
   });
 }
 
-document.getElementById("applyTimes").onclick = async ()=>{
-  const blocks = trainerTimeList.querySelectorAll("> div");
+document.getElementById("applyTimesAdmin").onclick = async ()=>{
   const result = {};
-
-  // 각 블록은 "h4 + 체크박스들" 구조
-  trainerTimeList.querySelectorAll("div").forEach(container=>{
-    const h4 = container.querySelector("h4");
-    if(!h4) return; // 외곽 div 제외
-    const name = h4.textContent.trim();
+  // 각 래퍼에서 h4의 트레이너명 기준으로 수집
+  trainerTimeList.querySelectorAll("> div").forEach(container=>{
+    const name = container.querySelector("h4").textContent.trim();
     const selected = Array.from(container.querySelectorAll('input[type="checkbox"]:checked')).map(i=>i.value);
     result[name] = selected;
   });
-
   await setDoc(doc(db,"settings","trainerTimes"), result);
-  showToast("✅ 시간 설정 저장됨");
-  // 저장 후 유저 화면도 최신 시간 반영
+  showToast("✅ (관리자) 시간 설정 저장됨");
   updateTimeOptions();
 };
 
 /* =======================
-      공지 관리(관리자)
+      시간 설정 - 트레이너(본인 1명, 요일 세로표)
+======================= */
+function buildTrainerDayGrid(){
+  // 이미 만들어졌으면 패스(빈 경우만 생성)
+  if(trainerDayGrid.dataset.ready==="yes") return;
+
+  trainerDayGrid.innerHTML="";
+  daysKo.forEach(dayKo=>{
+    const col=document.createElement("div");
+    col.className="day-column";
+    col.innerHTML = `<h4>${dayKo}</h4>`;
+    allTimes.forEach(tm=>{
+      const chip=document.createElement("label");
+      chip.className="time-chip";
+      chip.innerHTML = `<input type="checkbox" value="${tm}" data-day="${dayKo}"/> ${tm}`;
+      col.appendChild(chip);
+    });
+    trainerDayGrid.appendChild(col);
+  });
+  trainerDayGrid.dataset.ready="yes";
+}
+
+async function loadTrainerScheduleIntoGrid(){
+  // 본인 닉네임으로 문서 로드
+  const tName = currentUser?.nick || "";
+  if(!tName) return;
+  const snap = await getDoc(doc(db,"trainerSchedule", tName));
+  const data = snap.exists()? snap.data() : {};
+  // 체크 반영
+  trainerDayGrid.querySelectorAll('input[type="checkbox"]').forEach(cb=>{
+    const day = cb.dataset.day;
+    const arr = data[day] || [];
+    cb.checked = arr.includes(cb.value);
+  });
+}
+
+document.getElementById("applyTimesTrainer").onclick = async ()=>{
+  if(!currentUser) return;
+  const tName = currentUser.nick;
+  const result = {};
+  daysKo.forEach(d=> result[d] = []);
+
+  trainerDayGrid.querySelectorAll('input[type="checkbox"]:checked').forEach(cb=>{
+    const day = cb.dataset.day;
+    result[day].push(cb.value);
+  });
+
+  await setDoc(doc(db,"trainerSchedule", tName), result, { merge:true });
+  showToast("✅ (트레이너) 나의 시간 설정 저장됨");
+  updateTimeOptions();
+};
+
+/* =======================
+      공지(관리자)
 ======================= */
 async function loadAdminNotices(){
   adminNoticeList.innerHTML="";
@@ -609,7 +702,7 @@ async function loadAdminNotices(){
       await deleteDoc(doc(db,"notices",id));
       loadAdminNotices();
       showToast("🗑️ 공지 삭제됨");
-      loadNoticesForUsers(); // 유저 모달도 최신화
+      loadNoticesForUsers();
     };
   });
 }
@@ -631,7 +724,6 @@ async function loadRoles(){
   roleTable.innerHTML="";
   const q=await getDocs(collection(db,"users"));
   const arr=[]; q.forEach(s=>arr.push({id:s.id, ...s.data()}));
-  // 최근 업데이트순
   arr.sort((a,b)=> (b.updatedAt?.seconds||0)-(a.updatedAt?.seconds||0));
   arr.forEach(u=>{
     const tr=document.createElement("tr");
@@ -654,13 +746,11 @@ document.getElementById("applyRole").onclick = async ()=>{
   loadRoles();
 };
 
-/* 초기 렌더 */
-function init(){
-  // 메인에 들어간 뒤 트레이너 카드/캘린더 표시
-  // (로그인 후 showTrainer 호출)
-}
+/* =======================
+      시작
+======================= */
+function init(){ /* 로그인 후 showTrainer 호출됨 */ }
 init();
-
 </script>
 </body>
 </html>
