@@ -161,13 +161,22 @@ padding:12px 24px;font-weight:600;font-size:15px;box-shadow:0 4px 15px rgba(249,
 
     <!-- 예약 관리 -->
     <div class="tab-content" id="tab-reservations">
-      <h3>📅 예약 목록</h3>
-      <table class="admin-table">
-        <thead><tr><th>고번</th><th>닉네임</th><th>트레이너</th><th>날짜</th><th>시간</th><th>상태</th><th>관리</th></tr></thead>
-        <tbody id="adminTable"></tbody>
-      </table>
-    </div>
-
+  <h3>📅 예약 목록</h3>
+  <div id="trainerFilterArea" style="display:none;margin-bottom:10px;text-align:center;">
+    <select id="trainerFilter" style="padding:8px 10px;border:2px solid #ffd6a5;border-radius:10px;">
+      <option value="">모든 트레이너 보기</option>
+    </select>
+  </div>
+  <table class="admin-table">
+    <thead>
+      <tr>
+        <th>고번</th><th>닉네임</th><th>트레이너</th>
+        <th>날짜</th><th>시간</th><th>상태</th><th>관리</th>
+      </tr>
+    </thead>
+    <tbody id="adminTable"></tbody>
+  </table>
+</div>
     <!-- 시간 설정 -->
     <div class="tab-content" id="tab-times">
       <div id="timesAdminBlock" style="display:none">
@@ -615,9 +624,24 @@ async function loadReservationsTable(){
   adminTable.innerHTML="";
   await fetchBookings();
   const role = currentRoleForPanel;
-  const filtered = (role==="trainer")
-    ? bookings.filter(b=>b.trainer===currentUser.nick) // 닉네임과 트레이너명 동일 가정
-    : bookings;
+
+  // ✅ 트레이너 필터 select 보이기 (트레이너 패널일 때)
+  const trainerFilterArea = document.getElementById("trainerFilterArea");
+  if(role==="trainer"){
+    trainerFilterArea.style.display = "block";
+  }else{
+    trainerFilterArea.style.display = "none";
+  }
+
+  // ✅ 선택된 트레이너 필터 값
+  const filterSelect = document.getElementById("trainerFilter");
+  const filterValue = filterSelect ? filterSelect.value : "";
+
+  // ✅ 필터링 로직
+  let filtered = bookings;
+  if(role==="trainer"){
+    if(filterValue) filtered = bookings.filter(b=>b.trainer===filterValue);
+  }
 
   // 날짜/시간 최신순 정렬
   filtered.sort((a,b)=>{
@@ -643,7 +667,10 @@ async function loadReservationsTable(){
       <td>${b.time}</td>
       <td>${b.status}</td>
       <td>
-        <button data-id="${b.id}" class="btn-cancel" style="padding:4px 8px;border:none;border-radius:8px;background:#ffb4a2;cursor:pointer">취소</button>
+        <button data-id="${b.id}" class="btn-cancel"
+          style="padding:4px 8px;border:none;border-radius:8px;background:#ffb4a2;cursor:pointer">
+          취소
+        </button>
       </td>
     `;
     adminTable.appendChild(tr);
@@ -657,7 +684,7 @@ async function loadReservationsTable(){
         await deleteDoc(doc(db,"reservations",id));
         showToast("예약이 취소되었습니다.");
         await loadReservationsTable();
-        await fetchBookings(); // 메인 화면 동기화
+        await fetchBookings();
         await updateTimeOptions();
       }catch(e){
         console.error(e);
@@ -665,8 +692,12 @@ async function loadReservationsTable(){
       }
     });
   });
-}
 
+  // ✅ 필터 변경 이벤트 → 실시간 갱신
+  if(filterSelect){
+    filterSelect.onchange = ()=> loadReservationsTable();
+  }
+}
 /* =======================
       시간 설정 - 관리자
 ======================= */
