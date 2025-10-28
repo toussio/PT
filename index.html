@@ -222,7 +222,7 @@ const intro=document.getElementById("intro");
 const main=document.getElementById("main");
 document.getElementById("startBtn").onclick=()=>{intro.style.opacity="0";setTimeout(()=>{intro.style.display="none";main.style.display="block";},600);};
 
-/* 트레이너 */
+/* 트레이너 목록 */
 const trainers=[
   {name:"트레이너 A",photo:"https://via.placeholder.com/260x180?text=A",intro:"체형 교정 전문가"},
   {name:"트레이너 B",photo:"https://via.placeholder.com/260x180?text=B",intro:"다이어트 코치"},
@@ -231,97 +231,111 @@ const trainers=[
 ];
 let currentTrainer=0;
 
-/* 카드 2개 (앞/뒤) 준비 */
+/* 섹션에 카드 3개(이전/현재/다음) 배치 */
 const trainerSection=document.querySelector(".trainer-section");
 trainerSection.innerHTML = `
-  <div class="trainer-card front-card" id="frontCard"></div>
-  <div class="trainer-card back-card" id="backCard"></div>
+  <div class="trainer-card side-card left-card" id="leftCard"></div>
+  <div class="trainer-card center-card" id="centerCard"></div>
+  <div class="trainer-card side-card right-card" id="rightCard"></div>
 `;
-
-const frontCard=document.getElementById("frontCard");
-const backCard=document.getElementById("backCard");
+const leftCard=document.getElementById("leftCard");
+const centerCard=document.getElementById("centerCard");
+const rightCard=document.getElementById("rightCard");
 const trainerTitle=document.getElementById("trainerTitle");
 
-function setTrainerContent(card, index){
-  const t=trainers[index];
+/* 카드 내용 설정 */
+function setTrainerContent(card,index){
+  const t=trainers[(index+trainers.length)%trainers.length];
   card.innerHTML=`<img src="${t.photo}"><h3>${t.name}</h3><p>${t.intro}</p>`;
 }
 
 /* 초기 표시 */
-setTrainerContent(frontCard, currentTrainer);
-trainerTitle.textContent=`${trainers[currentTrainer].name} 일정`;
+function updateTrainerCards(){
+  setTrainerContent(leftCard,currentTrainer-1);
+  setTrainerContent(centerCard,currentTrainer);
+  setTrainerContent(rightCard,currentTrainer+1);
+  trainerTitle.textContent=`${trainers[currentTrainer].name} 일정`;
+}
+updateTrainerCards();
+
+/* CSS 스타일 제어용 transform */
+leftCard.style.transform="translateX(-160%) scale(0.9)";
+centerCard.style.transform="translateX(0) scale(1)";
+rightCard.style.transform="translateX(160%) scale(0.9)";
+leftCard.style.opacity=0.5;
+rightCard.style.opacity=0.5;
 
 /* 드래그 관련 */
 let startX=0, currentX=0, isDragging=false;
 
-function updateBackCard(direction){
-  let nextIdx;
-  if(direction==="left") nextIdx=(currentTrainer+1)%trainers.length;
-  else nextIdx=(currentTrainer-1+trainers.length)%trainers.length;
-  setTrainerContent(backCard, nextIdx);
-  backCard.style.opacity=0.4;
-  backCard.style.transform=`translateX(${direction==="left"? "100%" : "-100%"}) scale(0.95)`;
-}
-
-/* 공통 드래그 함수 */
 function onDragStart(x){
   isDragging=true;
   startX=x;
-  frontCard.style.transition="none";
-  backCard.style.transition="none";
 }
 function onDragMove(x){
   if(!isDragging)return;
   currentX=x;
   const diff=currentX-startX;
-  const dir = diff<0?"left":"right";
-  updateBackCard(dir);
-  frontCard.style.transform=`translateX(${diff}px) rotate(${diff/40}deg)`;
-  backCard.style.transform=`translateX(${diff<0?diff+280:diff-280}px) scale(0.95)`;
-  backCard.style.opacity=Math.min(0.5,Math.abs(diff)/300);
+  const ratio=Math.max(-1,Math.min(1,diff/200));
+  // 옆카드 살짝 이동
+  leftCard.style.transform=`translateX(${(-160+ratio*60)}%) scale(${0.9+Math.max(0,ratio*0.05)})`;
+  rightCard.style.transform=`translateX(${(160+ratio*60)}%) scale(${0.9-Math.max(0,ratio*0.05)})`;
+  centerCard.style.transform=`translateX(${ratio*40}px) scale(${1-Math.abs(ratio)*0.05})`;
 }
 function onDragEnd(x){
   if(!isDragging)return;
   isDragging=false;
   const diff=x-startX;
-  const abs=Math.abs(diff);
-  frontCard.style.transition="transform .4s ease";
-  backCard.style.transition="transform .4s ease, opacity .4s ease";
-  if(abs>100){
-    // 방향 결정
-    const dir = diff<0?"left":"right";
-    frontCard.style.transform=`translateX(${dir==="left"?"-120%":"120%"}) rotate(${dir==="left"?"-10deg":"10deg"})`;
-    backCard.style.transform="translateX(0) scale(1)";
-    backCard.style.opacity=1;
-    setTimeout(()=>{
-      currentTrainer = dir==="left" ? (currentTrainer+1)%trainers.length : (currentTrainer-1+trainers.length)%trainers.length;
-      const temp=frontCard.innerHTML;
-      frontCard.innerHTML=backCard.innerHTML;
-      backCard.style.transition="none";
-      backCard.style.opacity=0;
-      backCard.style.transform="translateX(0)";
-      trainerTitle.textContent=`${trainers[currentTrainer].name} 일정`;
-      renderCalendar();
-    },400);
-  }else{
-    // 복귀
-    frontCard.style.transform="translateX(0)";
-    backCard.style.transform=`translateX(${diff<0?"100%":"-100%"}) scale(0.95)`;
-    backCard.style.opacity=0;
+  const threshold=100;
+  if(diff<-threshold){ // 왼쪽 드래그 → 다음 트레이너
+    currentTrainer=(currentTrainer+1)%trainers.length;
+    animateSlide("left");
+  }else if(diff>threshold){ // 오른쪽 드래그 → 이전 트레이너
+    currentTrainer=(currentTrainer-1+trainers.length)%trainers.length;
+    animateSlide("right");
+  }else{ // 복귀
+    resetPositions();
   }
 }
+function resetPositions(){
+  leftCard.style.transition=centerCard.style.transition=rightCard.style.transition="transform .4s ease, opacity .4s ease";
+  leftCard.style.transform="translateX(-160%) scale(0.9)";
+  centerCard.style.transform="translateX(0) scale(1)";
+  rightCard.style.transform="translateX(160%) scale(0.9)";
+  leftCard.style.opacity=0.5;
+  rightCard.style.opacity=0.5;
+  setTimeout(()=>{leftCard.style.transition=centerCard.style.transition=rightCard.style.transition="";},400);
+}
 
-/* PC 이벤트 */
-frontCard.addEventListener("mousedown",e=>onDragStart(e.clientX));
+/* 전환 애니메이션 */
+function animateSlide(dir){
+  leftCard.style.transition=centerCard.style.transition=rightCard.style.transition="transform .5s ease, opacity .5s ease";
+  if(dir==="left"){
+    // 오른쪽 카드가 중앙으로, 중앙은 왼쪽으로 이동
+    leftCard.style.transform="translateX(-160%) scale(0.9)";
+    centerCard.style.transform="translateX(-160%) scale(0.9)";
+    rightCard.style.transform="translateX(0) scale(1)";
+  }else{
+    leftCard.style.transform="translateX(0) scale(1)";
+    centerCard.style.transform="translateX(160%) scale(0.9)";
+    rightCard.style.transform="translateX(160%) scale(0.9)";
+  }
+  setTimeout(()=>{
+    updateTrainerCards();
+    resetPositions();
+    renderCalendar();
+  },500);
+}
+
+/* 이벤트 (PC+모바일) */
+centerCard.addEventListener("mousedown",e=>onDragStart(e.clientX));
 window.addEventListener("mousemove",e=>{if(isDragging)onDragMove(e.clientX);});
 window.addEventListener("mouseup",e=>onDragEnd(e.clientX));
+centerCard.addEventListener("touchstart",e=>onDragStart(e.touches[0].clientX));
+centerCard.addEventListener("touchmove",e=>onDragMove(e.touches[0].clientX));
+centerCard.addEventListener("touchend",e=>onDragEnd(e.changedTouches[0].clientX));
 
-/* 모바일 이벤트 */
-frontCard.addEventListener("touchstart",e=>onDragStart(e.touches[0].clientX));
-frontCard.addEventListener("touchmove",e=>onDragMove(e.touches[0].clientX));
-frontCard.addEventListener("touchend",e=>onDragEnd(e.changedTouches[0].clientX));
-
-/* 예약 관련 */
+/* 예약 로직 */
 const bookings=[{trainer:"트레이너 A",user:"홍길동",date:"2025-10-15",time:"14:00"}];
 const calendar=document.getElementById("calendar");
 let selectedDate=null;
@@ -360,13 +374,10 @@ function renderCalendar(){
   }
 }
 
-/* 시간 옵션 */
 function updateTimeOptions(){
   timeSelect.innerHTML='<option value="">시간 선택</option>';
   const t=trainers[currentTrainer];
-  const bookedTimes=bookings
-    .filter(b=>b.trainer===t.name && b.date===selectedDate)
-    .map(b=>b.time);
+  const bookedTimes=bookings.filter(b=>b.trainer===t.name && b.date===selectedDate).map(b=>b.time);
   let available=false;
   baseTimes.forEach(time=>{
     const opt=document.createElement("option");
@@ -409,3 +420,4 @@ renderCalendar();
 </script>
 </body>
 </html>
+
