@@ -82,7 +82,35 @@ button.reserve-btn:disabled{opacity:.6;cursor:not-allowed}
 /* 트레이너 시간설정: 요일 세로표 */
 .day-column{border:1px solid #ffd6a5;border-radius:12px;padding:10px;background:#fffaf3;min-width:150px}
 .day-column h4{margin:6px 0 10px;color:#b45309}
-.time-chip{display:flex;align-items:center;gap:6px;background:#fff;border:1px solid #ffd6a5;border-radius:10px;padding:6px 8px;margin:4px 0;}
+/* 24시간용 시간칩 스타일 */
+.time-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #fff;
+  border: 2px solid #ffd6a5;
+  border-radius: 10px;
+  padding: 6px 10px;
+  font-weight: 600;
+  min-width: 90px;
+  box-shadow: 0 2px 6px rgba(249,115,22,0.08);
+  transition: 0.2s;
+}
+.time-chip:hover {
+  background: #fff7ed;
+  transform: scale(1.03);
+}
+
+/* 시간칩 그리드 정렬 */
+#timeGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 10px;
+  margin: 12px 0 20px;
+  justify-items: center;
+}
+
 .time-grid{display:flex;gap:12px;flex-wrap:wrap}
 
 /* 토스트 */
@@ -245,7 +273,9 @@ const trainers = [
   {name:"트레이너 D",photo:"https://via.placeholder.com/260x180?text=D",intro:"재활 트레이너"}
 ];
 
-const allTimes = ["08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00"];
+const allTimes = Array.from({length:24},(_,i)=>
+  `${String(i).padStart(2,"0")}:00`
+);
 const daysKo = ["일","월","화","수","목","금","토"];
 
 /* =======================
@@ -677,12 +707,12 @@ function buildTrainerDayGrid(){
     if(!tName || !dName) return;
 
     // 시간 리스트 출력
-    allTimes.forEach(tm=>{
-      const chip=document.createElement("label");
-      chip.className="time-chip";
-      chip.innerHTML = `<input type="checkbox" value="${tm}"> ${tm}`;
-      timeGrid.appendChild(chip);
-    });
+allTimes.forEach(tm=>{
+  const chip=document.createElement("label");
+  chip.className="time-chip";
+  chip.innerHTML = `<input type="checkbox" value="${tm}"> ${tm}`;
+  timeGrid.appendChild(chip);
+});
 
     // 기존 설정 불러오기
     const snap = await getDoc(doc(db,"trainerSchedule", tName));
@@ -784,6 +814,7 @@ init();
 </script>
 </body>
 </html>
+
 
 
 
