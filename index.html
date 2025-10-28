@@ -56,22 +56,20 @@ h2.title{
 }
 
 /* 트레이너 카드 */
-.trainer-section{display:flex;justify-content:center;align-items:center;gap:30px;margin-bottom:40px;}
-.arrow{
-  background:var(--grad);border:none;border-radius:50%;
-  width:55px;height:55px;display:flex;align-items:center;justify-content:center;
-  cursor:pointer;transition:.3s;box-shadow:0 0 10px rgba(249,115,22,.3);
+.trainer-section{
+  display:flex;justify-content:center;align-items:center;
+  margin-bottom:40px;position:relative;
 }
-.arrow:hover{transform:scale(1.08);box-shadow:0 0 18px rgba(249,115,22,.6);}
 .trainer-card{
   width:280px;border-radius:20px;background:var(--card);
   box-shadow:0 4px 10px rgba(0,0,0,.1);
-  text-align:center;overflow:hidden;cursor:pointer;transition:.3s;
+  text-align:center;overflow:hidden;cursor:grab;transition:.3s;
 }
-.trainer-card img{width:100%;height:180px;object-fit:cover;}
+.trainer-card:active{cursor:grabbing;}
+.trainer-card img{width:100%;height:180px;object-fit:cover;user-select:none;}
 .trainer-card h3{margin:10px 0 4px;color:var(--accent);}
 .trainer-card p{margin:0;color:var(--muted);}
-.trainer-card:hover{transform:translateY(-4px);box-shadow:0 6px 20px rgba(249,115,22,.3);}
+.trainer-card:hover{box-shadow:0 6px 20px rgba(249,115,22,.3);transform:translateY(-3px);}
 
 /* 캘린더 */
 .schedule-section{
@@ -156,24 +154,9 @@ button.reserve-btn:disabled {
   box-shadow: none;
   color: #fffaf3;
 }
-button.reserve-btn::before {
-  content: "";
-  position: absolute;
-  top: 0; left: -100%;
-  width: 100%; height: 100%;
-  background: linear-gradient(120deg, rgba(255,255,255,0.6), rgba(255,255,255,0));
-  transition: 0.5s;
-}
 button.reserve-btn:hover:not(:disabled) {
   transform: translateY(-4px);
   box-shadow: 0 8px 20px rgba(249,115,22,0.4);
-}
-button.reserve-btn:hover::before {
-  left: 100%;
-}
-button.reserve-btn:active:not(:disabled) {
-  transform: scale(0.96);
-  box-shadow: 0 3px 8px rgba(249,115,22,0.3);
 }
 
 /* 토스트 */
@@ -215,9 +198,7 @@ button.reserve-btn:active:not(:disabled) {
 <div class="main" id="main">
   <h2 class="title">트레이너 예약 시스템</h2>
   <div class="trainer-section">
-    <button class="arrow" id="prevBtn">◀</button>
     <div class="trainer-card" id="trainerCard"></div>
-    <button class="arrow" id="nextBtn">▶</button>
   </div>
 
   <div class="schedule-section">
@@ -236,10 +217,12 @@ button.reserve-btn:active:not(:disabled) {
 </div>
 
 <script>
+/* 인트로 */
 const intro=document.getElementById("intro");
 const main=document.getElementById("main");
 document.getElementById("startBtn").onclick=()=>{intro.style.opacity="0";setTimeout(()=>{intro.style.display="none";main.style.display="block";},600);};
 
+/* 트레이너 */
 const trainers=[
   {name:"트레이너 A",photo:"https://via.placeholder.com/260x180?text=A",intro:"체형 교정 전문가"},
   {name:"트레이너 B",photo:"https://via.placeholder.com/260x180?text=B",intro:"다이어트 코치"},
@@ -249,10 +232,40 @@ const trainers=[
 let currentTrainer=0;
 const trainerCard=document.getElementById("trainerCard");
 const trainerTitle=document.getElementById("trainerTitle");
-function showTrainer(i){const t=trainers[i];trainerCard.innerHTML=`<img src="${t.photo}"><h3>${t.name}</h3><p>${t.intro}</p>`;trainerTitle.textContent=`${t.name} 일정`;}
-document.getElementById("prevBtn").onclick=()=>{currentTrainer=(currentTrainer-1+trainers.length)%trainers.length;showTrainer(currentTrainer);renderCalendar();};
-document.getElementById("nextBtn").onclick=()=>{currentTrainer=(currentTrainer+1)%trainers.length;showTrainer(currentTrainer);renderCalendar();};
 
+/* 드래그 감지 */
+let startX=0;
+let endX=0;
+trainerCard.addEventListener("mousedown",e=>{startX=e.clientX;});
+trainerCard.addEventListener("mouseup",e=>{
+  endX=e.clientX;
+  handleSwipe();
+});
+trainerCard.addEventListener("touchstart",e=>{startX=e.touches[0].clientX;});
+trainerCard.addEventListener("touchend",e=>{
+  endX=e.changedTouches[0].clientX;
+  handleSwipe();
+});
+function handleSwipe(){
+  const diff=endX-startX;
+  if(Math.abs(diff)<80)return; // 80px 이상 이동해야 스와이프 처리
+  if(diff<0){ // 왼쪽 스와이프
+    currentTrainer=(currentTrainer+1)%trainers.length;
+  } else { // 오른쪽 스와이프
+    currentTrainer=(currentTrainer-1+trainers.length)%trainers.length;
+  }
+  showTrainer(currentTrainer);
+  renderCalendar();
+}
+
+/* 트레이너 표시 */
+function showTrainer(i){
+  const t=trainers[i];
+  trainerCard.innerHTML=`<img src="${t.photo}"><h3>${t.name}</h3><p>${t.intro}</p>`;
+  trainerTitle.textContent=`${t.name} 일정`;
+}
+
+/* 예약 데이터 */
 const bookings=[{trainer:"트레이너 A",user:"홍길동",date:"2025-10-15",time:"14:00"}];
 const calendar=document.getElementById("calendar");
 let selectedDate=null;
@@ -291,6 +304,7 @@ function renderCalendar(){
   }
 }
 
+/* 시간 옵션 */
 function updateTimeOptions(){
   timeSelect.innerHTML='<option value="">시간 선택</option>';
   const t=trainers[currentTrainer];
@@ -311,6 +325,7 @@ function updateTimeOptions(){
   reserveBtn.disabled=!available;
 }
 
+/* 토스트 */
 function showToast(msg){
   const toast=document.createElement("div");
   toast.className="toast";
@@ -319,6 +334,7 @@ function showToast(msg){
   setTimeout(()=>toast.remove(),3000);
 }
 
+/* 예약 */
 reserveBtn.onclick=()=>{
   const t=trainers[currentTrainer];
   if(!selectedDate)return showToast("날짜를 선택하세요!");
