@@ -58,11 +58,12 @@ h2.title{
 /* 트레이너 섹션 */
 .trainer-section {
   position: relative;
-  height: 300px;
+  height: 320px;
   display: flex;
   justify-content: center;
   align-items: center;
   margin-bottom: 60px;
+  overflow: hidden;
 }
 .trainer-card {
   position: absolute;
@@ -75,7 +76,7 @@ h2.title{
   text-align: center;
   overflow: hidden;
   transform-origin: center center;
-  transition: transform .6s ease, opacity .4s ease;
+  transition: transform .7s cubic-bezier(0.25, 1, 0.5, 1), opacity .5s ease;
 }
 .trainer-card img {
   width: 100%;
@@ -94,7 +95,7 @@ h2.title{
 /* 버튼 */
 .trainer-nav {
   position: absolute;
-  bottom: -70px;
+  bottom: 10px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -275,10 +276,7 @@ button.reserve-btn:hover:not(:disabled) {
 /* 인트로 */
 const intro=document.getElementById("intro");
 const main=document.getElementById("main");
-document.getElementById("startBtn").onclick=()=>{
-  intro.style.opacity="0";
-  setTimeout(()=>{intro.style.display="none";main.style.display="block";},600);
-};
+document.getElementById("startBtn").onclick=()=>{intro.style.opacity="0";setTimeout(()=>{intro.style.display="none";main.style.display="block";},600);};
 
 /* 트레이너 목록 */
 const trainers=[
@@ -319,24 +317,28 @@ function resetPositions(){
 /* 전환 애니메이션 */
 function animateSlide(dir){
   [leftCard,centerCard,rightCard].forEach(c=>{
-    c.style.transition="transform .6s ease, opacity .4s ease";
+    c.style.transition="transform .7s cubic-bezier(0.25, 1, 0.5, 1), opacity .6s ease";
   });
-  if(dir==="left"){
-    leftCard.style.transform="translate(-300%, -50%) scale(0.8)";
-    centerCard.style.transform="translate(-220%, -50%) scale(0.85)";
+
+  if(dir==="left"){ // 다음 트레이너로 이동
+    centerCard.style.transform="translate(-220%, -50%) scale(0.9)";
+    centerCard.style.opacity="0";
     rightCard.style.transform="translate(-50%, -50%) scale(1)";
-  }else{
-    rightCard.style.transform="translate(200%, -50%) scale(0.8)";
-    centerCard.style.transform="translate(120%, -50%) scale(0.85)";
+    rightCard.style.opacity="1";
+  }else{ // 이전 트레이너로 이동
+    centerCard.style.transform="translate(120%, -50%) scale(0.9)";
+    centerCard.style.opacity="0";
     leftCard.style.transform="translate(-50%, -50%) scale(1)";
+    leftCard.style.opacity="1";
   }
+
   setTimeout(()=>{
     if(dir==="left") currentTrainer=(currentTrainer+1)%trainers.length;
     else currentTrainer=(currentTrainer-1+trainers.length)%trainers.length;
     updateTrainerCards();
     resetPositions();
     renderCalendar();
-  },600);
+  },700);
 }
 
 /* 버튼 이벤트 */
@@ -346,20 +348,9 @@ document.getElementById("prevTrainer").onclick=()=>animateSlide("right");
 /* 스와이프 이벤트 */
 let startX=0,isDragging=false;
 centerCard.addEventListener("mousedown",e=>{isDragging=true;startX=e.clientX;});
-window.addEventListener("mouseup",e=>{
-  if(!isDragging)return;
-  const diff=e.clientX-startX;
-  if(diff>100)animateSlide("right");
-  else if(diff<-100)animateSlide("left");
-  isDragging=false;
-});
+window.addEventListener("mouseup",e=>{if(!isDragging)return;const diff=e.clientX-startX;if(diff>100)animateSlide("right");else if(diff<-100)animateSlide("left");isDragging=false;});
 centerCard.addEventListener("touchstart",e=>{isDragging=true;startX=e.touches[0].clientX;});
-centerCard.addEventListener("touchend",e=>{
-  const diff=e.changedTouches[0].clientX-startX;
-  if(diff>100)animateSlide("right");
-  else if(diff<-100)animateSlide("left");
-  isDragging=false;
-});
+centerCard.addEventListener("touchend",e=>{const diff=e.changedTouches[0].clientX-startX;if(diff>100)animateSlide("right");else if(diff<-100)animateSlide("left");isDragging=false;});
 
 updateTrainerCards();
 resetPositions();
@@ -392,13 +383,7 @@ function renderCalendar(){
     if(isPast) day.classList.add("disabled");
     if(hasBooking) day.classList.add("booked");
     if(isToday) day.classList.add("today");
-    day.onclick=()=>{
-      if(isPast) return showToast("이전 날짜는 예약할 수 없습니다.");
-      document.querySelectorAll(".day").forEach(c=>c.classList.remove("selected"));
-      day.classList.add("selected");
-      selectedDate=dateStr;
-      updateTimeOptions();
-    };
+    day.onclick=()=>{if(isPast)return showToast("이전 날짜는 예약할 수 없습니다.");document.querySelectorAll(".day").forEach(c=>c.classList.remove("selected"));day.classList.add("selected");selectedDate=dateStr;updateTimeOptions();};
     calendar.appendChild(day);
   }
 }
