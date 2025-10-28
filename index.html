@@ -424,6 +424,7 @@ function renderCalendar(){
       dayEl.classList.add("selected");
       selectedDate = dateStr;
       updateTimeOptions();
+      showMyReservationModal(dateStr);
     });
     calendar.appendChild(dayEl);
   }
@@ -982,9 +983,81 @@ document.getElementById("applyRole").addEventListener("click", async ()=>{
 ======================= */
 function init(){ /* 로그인 후 showTrainer 호출됨 */ }
 init();
+  /* =======================
+      내 예약 보기 모달
+======================= */
+
+// 모달 HTML 추가
+const myModal = document.createElement("div");
+myModal.id = "myReservationModal";
+myModal.style.cssText = `
+  position:fixed; inset:0;
+  background:rgba(0,0,0,0.5);
+  display:none; align-items:center; justify-content:center;
+  z-index:4000;
+`;
+myModal.innerHTML = `
+  <div id="myModalContent" style="
+    background:#fffaf3; border-radius:16px; padding:30px 40px;
+    max-width:420px; width:90%; text-align:center;
+    box-shadow:0 10px 25px rgba(0,0,0,0.3);
+    animation:fadePop .4s ease;">
+    <h3 style="margin-top:0;color:#b45309">📅 나의 예약 정보</h3>
+    <div id="myReservationList" style="margin-top:12px;"></div>
+    <p style="margin-top:20px;font-size:14px;color:#7b5d49;">(아무 키나 클릭 시 닫힙니다)</p>
+  </div>
+`;
+document.body.appendChild(myModal);
+
+// 닫기 이벤트
+myModal.addEventListener("click", ()=> myModal.style.display="none");
+document.addEventListener("keydown", ()=> myModal.style.display="none");
+
+/* ✅ 날짜 클릭 시 내 예약 모달 띄우기 */
+async function showMyReservationModal(dateStr){
+  if(!currentUser) return showToast("로그인 후 이용해주세요!");
+  const listBox = document.getElementById("myReservationList");
+  listBox.innerHTML = "⏳ 불러오는 중...";
+  myModal.style.display = "flex";
+
+  try{
+    const q = await getDocs(collection(db,"reservations"));
+    const arr = [];
+    q.forEach(s=>{
+      const d = s.data();
+      if(d.userId === currentUser.id && d.date === dateStr) arr.push(d);
+    });
+
+    listBox.innerHTML = "";
+    if(arr.length === 0){
+      listBox.innerHTML = `<p style="font-weight:600;color:#7b5d49;">신청한 예약이 없습니다.</p>`;
+      return;
+    }
+
+    arr.forEach(r=>{
+      const div=document.createElement("div");
+      div.style.cssText=`
+        border:1px solid #ffd6a5;
+        background:#fff; border-radius:12px;
+        padding:10px 14px; margin:8px 0;
+        box-shadow:0 2px 8px rgba(249,115,22,0.08);
+      `;
+      div.innerHTML = `
+        <p style="margin:4px 0;"><b>트레이너:</b> ${r.trainer}</p>
+        <p style="margin:4px 0;"><b>시간:</b> ${r.time}</p>
+        <p style="margin:4px 0;"><b>상태:</b> ${r.status}</p>
+      `;
+      listBox.appendChild(div);
+    });
+  }catch(e){
+    console.error(e);
+    listBox.innerHTML = `<p style="color:red;">불러오는 중 오류가 발생했습니다.</p>`;
+  }
+}
 </script>
 </body>
 </html>
+
 
 
 
