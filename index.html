@@ -731,10 +731,15 @@ function buildTrainerDayGrid(){
         ${daysKo.map(d=>`<option value="${d}">${d}</option>`).join("")}
       </select>
     </div>
-    <div id="timeGrid"></div>
-    <button id="trainerTimesApply" class="tab-btn" style="margin-top:8px">적용</button>
-  `;
+    
+    <!-- 시간칩을 감싸는 박스 -->
+    <div id="timeGrid" style="margin-bottom:16px"></div>
 
+    <!-- ✅ 아래쪽 중앙에 적용 버튼 -->
+    <div style="display:flex;justify-content:center;margin-top:8px">
+      <button id="trainerTimesApply" class="tab-btn" style="padding:10px 20px;font-weight:700;">적용</button>
+    </div>
+  `;
   const trainerSelect = area.querySelector("#trainerSelect");
   const daySelect = area.querySelector("#daySelect");
   const timeGrid = area.querySelector("#timeGrid");
@@ -904,3 +909,4 @@ init();
 </script>
 </body>
 </html>
+
