@@ -625,22 +625,32 @@ async function loadReservationsTable(){
   await fetchBookings();
   const role = currentRoleForPanel;
 
-  // ✅ 트레이너 필터 select 보이기 (트레이너 패널일 때)
   const trainerFilterArea = document.getElementById("trainerFilterArea");
+  const trainerFilter = document.getElementById("trainerFilter");
+
+  // ✅ 트레이너 패널일 때만 표시
   if(role==="trainer"){
-    trainerFilterArea.style.display = "block";
+    trainerFilterArea.style.display="block";
+
+    // ✅ 옵션 자동 추가 (최초 한 번만)
+    if(trainerFilter.options.length === 1){
+      trainers.forEach(t=>{
+        const opt=document.createElement("option");
+        opt.value=t.name;
+        opt.textContent=t.name;
+        trainerFilter.appendChild(opt);
+      });
+    }
   }else{
-    trainerFilterArea.style.display = "none";
+    trainerFilterArea.style.display="none";
   }
 
-  // ✅ 선택된 트레이너 필터 값
-  const filterSelect = document.getElementById("trainerFilter");
-  const filterValue = filterSelect ? filterSelect.value : "";
+  const filterValue = trainerFilter ? trainerFilter.value : "";
 
-  // ✅ 필터링 로직
+  // ✅ 필터 적용
   let filtered = bookings;
-  if(role==="trainer"){
-    if(filterValue) filtered = bookings.filter(b=>b.trainer===filterValue);
+  if(role==="trainer" && filterValue){
+    filtered = bookings.filter(b=>b.trainer===filterValue);
   }
 
   // 날짜/시간 최신순 정렬
@@ -694,8 +704,8 @@ async function loadReservationsTable(){
   });
 
   // ✅ 필터 변경 이벤트 → 실시간 갱신
-  if(filterSelect){
-    filterSelect.onchange = ()=> loadReservationsTable();
+if(trainerFilter){
+  trainerFilter.onchange = ()=> loadReservationsTable();
   }
 }
 /* =======================
@@ -945,6 +955,7 @@ init();
 </script>
 </body>
 </html>
+
 
 
 
