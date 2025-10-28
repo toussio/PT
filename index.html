@@ -6,19 +6,18 @@
 <title>PT 트레이너 예약 시스템</title>
 <style>
 :root {
-  --bg:#0b0b0b;
+  --bg:#FFDEB3; /* 🔸기존 #0b0b0b → 변경 */
   --card:#1e1e1e;
   --accent:#f97316;
   --grad:linear-gradient(135deg,#fb923c,#f97316,#ea580c);
-  --ink:#f8fafc;
-  --muted:#cbd5e1;
-  --disabled:#475569;
+  --ink:#0b0b0b; /* 배경이 밝아졌으니 글씨색은 어두운 쪽으로 */
+  --muted:#334155;
+  --disabled:#94a3b8;
 }
-*{box-sizing:border-box;}
-body{
+body {
   margin:0;
   font-family:"Pretendard",sans-serif;
-  background:var(--bg);
+  background:var(--bg); /* 여기도 자동 반영됨 */
   color:var(--ink);
   overflow-x:hidden;
 }
@@ -529,3 +528,4 @@ function renderNotices() {
 </script>
 </body>
 </html>
+
