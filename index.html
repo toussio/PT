@@ -67,6 +67,45 @@ body {
 .floating-notice { top:20px; right:20px; }
 .floating-admin { bottom:20px; right:20px; }
 
+/* 공지 모달 */
+.notice-modal{
+  position:fixed; inset:0;
+  background:rgba(0,0,0,0.5);
+  display:none; align-items:center; justify-content:center;
+  z-index:3000;
+}
+.notice-content{
+  background:#fffaf3;
+  border-radius:16px;
+  padding:30px 40px;
+  max-width:600px; width:90%;
+  box-shadow:0 10px 25px rgba(0,0,0,0.3);
+  animation:fadePop .5s ease;
+}
+.notice-content h2{
+  background:var(--grad);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  margin-top:0; text-align:center;
+}
+.notice-content ul{
+  list-style:none; padding:0; margin:10px 0;
+}
+.notice-content li{
+  background:rgba(255,243,224,0.8);
+  border-left:4px solid var(--accent);
+  padding:12px 16px;
+  border-radius:10px;
+  margin:8px 0;
+  box-shadow:0 2px 8px rgba(0,0,0,0.05);
+}
+.notice-close{
+  float:right;
+  font-weight:700;
+  color:var(--accent);
+  cursor:pointer;
+  font-size:18px;
+}
+
 /* 관리자 모달 */
 .admin-modal{
   position:fixed; inset:0;
@@ -114,25 +153,67 @@ h2.title{
 .trainer-card p{margin:0;color:var(--muted);}
 .trainer-card:hover{transform:translateY(-4px);box-shadow:0 6px 20px rgba(249,115,22,.3);}
 
-/* 캘린더 */
-.schedule-section{
-  max-width:800px;margin:0 auto;
-  background:var(--card);
-  border-radius:20px;padding:30px;
-  box-shadow:0 0 20px rgba(0,0,0,.08);
+/* 시간 선택 + 예약 버튼 */
+.time-select-area {
+  margin-top: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  animation: fadePop .6s ease;
 }
-.schedule-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
-.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-top:10px;padding-bottom:16px;}
-.day{
-  text-align:center;padding:10px 0;border-radius:10px;
-  background:rgba(255,255,255,0.7);
-  cursor:pointer;transition:.25s;font-size:14px;min-height:55px;
+.time-select-area select {
+  width: 85%;
+  background: #fffaf3;
+  border: 2px solid #ffd6a5;
+  border-radius: 20px;
+  padding: 16px 18px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+  transition: all .3s ease;
 }
-.day:hover:not(.disabled):not(.booked){background:rgba(249,115,22,.25);transform:scale(1.05);}
-.day.selected{outline:2px solid var(--accent);}
-.day.booked{background:var(--grad);color:#fff;}
-.day.disabled{color:var(--disabled);opacity:0.5;cursor:not-allowed;background:rgba(255,255,255,0.4);}
-.day.today{outline:1px dashed var(--accent);}
+.time-select-area select:hover {
+  border-color: #fca65a;
+  background: #fff3e0;
+  box-shadow: 0 6px 20px rgba(249,115,22,0.2);
+}
+.time-select-area select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 10px rgba(249,115,22,0.4);
+}
+button.reserve-btn {
+  width: 85%;
+  background: var(--grad);
+  color: #fff;
+  border: none;
+  border-radius: 24px;
+  padding: 18px 22px;
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(249,115,22,0.3);
+  transition: all .3s ease;
+  position: relative;
+  overflow: hidden;
+}
+button.reserve-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(249,115,22,0.5);
+}
+button.reserve-btn::before {
+  content: "";
+  position: absolute;
+  top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: linear-gradient(120deg, rgba(255,255,255,0.5), rgba(255,255,255,0));
+  transition: 0.6s;
+}
+button.reserve-btn:hover::before {
+  left: 100%;
+}
 
 /* 토스트 */
 .toast {
@@ -154,6 +235,10 @@ h2.title{
   0% {opacity:0; transform:translate(-50%,20px);}
   10%,90% {opacity:1; transform:translate(-50%,0);}
   100% {opacity:0; transform:translate(-50%,20px);}
+}
+@keyframes fadePop {
+  from {opacity: 0; transform: scale(0.9);}
+  to {opacity: 1; transform: scale(1);}
 }
 </style>
 </head>
@@ -197,6 +282,19 @@ h2.title{
 <button class="floating-btn floating-notice" id="noticeBtn">📢 공지사항</button>
 <button class="floating-btn floating-admin" id="adminBtn">⚙ 관리자</button>
 
+<!-- 공지사항 모달 -->
+<div class="notice-modal" id="noticeModal">
+  <div class="notice-content">
+    <span class="notice-close" id="noticeClose">✕</span>
+    <h2>📢 작두 PT 센터 공지사항</h2>
+    <ul>
+      <li>🏆 11월 1일부터 신규 PT 이벤트가 시작됩니다!</li>
+      <li>⏰ 하루 최대 1회 예약만 가능합니다.</li>
+      <li>🎉 회원권 갱신 시 추가 10% 할인 혜택!</li>
+    </ul>
+  </div>
+</div>
+
 <!-- 관리자 모달 -->
 <div class="admin-modal" id="adminModal">
   <div class="admin-content">
@@ -222,11 +320,9 @@ const firebaseConfig = {
   appId: "1:1015121703137:web:b4177af397cc5ed74887a0",
   measurementId: "G-2T9H6H06BT"
 };
-
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-/* ---------------- 기본 UI ---------------- */
 const intro=document.getElementById("intro");
 const main=document.getElementById("main");
 document.getElementById("startBtn").onclick=()=>{intro.style.opacity="0";setTimeout(()=>{intro.style.display="none";main.style.display="block";},600);};
@@ -237,83 +333,31 @@ const trainers=[
   {name:"트레이너 C",photo:"https://via.placeholder.com/260x180?text=C",intro:"근력 향상 전문가"},
   {name:"트레이너 D",photo:"https://via.placeholder.com/260x180?text=D",intro:"재활 트레이너"}
 ];
-
 let currentTrainer=0, selectedDate=null, bookings=[];
-const trainerCard=document.getElementById("trainerCard");
-const trainerTitle=document.getElementById("trainerTitle");
-const calendar=document.getElementById("calendar");
-const timeSelect=document.getElementById("timeSelect");
-const reserveBtn=document.getElementById("reserveBtn");
+const trainerCard=document.getElementById("trainerCard"),trainerTitle=document.getElementById("trainerTitle"),calendar=document.getElementById("calendar"),timeSelect=document.getElementById("timeSelect"),reserveBtn=document.getElementById("reserveBtn");
 const baseTimes=["10:00","12:00","14:00","16:00","18:00"];
 
 function showTrainer(i){const t=trainers[i];trainerCard.innerHTML=`<img src="${t.photo}"><h3>${t.name}</h3><p>${t.intro}</p>`;trainerTitle.textContent=`${t.name} 일정`;}
 document.getElementById("prevBtn").onclick=()=>{currentTrainer=(currentTrainer-1+trainers.length)%trainers.length;showTrainer(currentTrainer);renderCalendar();};
 document.getElementById("nextBtn").onclick=()=>{currentTrainer=(currentTrainer+1)%trainers.length;showTrainer(currentTrainer);renderCalendar();};
 
-function renderCalendar(){
-  calendar.innerHTML="";
-  const now=new Date();
-  const todayZero=new Date(now.getFullYear(),now.getMonth(),now.getDate());
-  const y=now.getFullYear(),m=now.getMonth();
-  const fd=new Date(y,m,1),ld=new Date(y,m+1,0);
-  document.getElementById("monthLabel").textContent=`${y}년 ${m+1}월`;
-  for(let i=0;i<fd.getDay();i++)calendar.appendChild(document.createElement("div"));
-  for(let d=1;d<=ld.getDate();d++){
-    const dateObj=new Date(y,m,d);
-    const dateStr=`${y}-${m+1}-${d}`;
-    const day=document.createElement("div");
-    day.className="day";
-    day.textContent=d;
-    const isPast=dateObj<todayZero;
-    const hasBooking=bookings.some(b=>b.trainer===trainers[currentTrainer].name && b.date===dateStr);
-    const isToday=dateObj.toDateString()===now.toDateString();
-    if(isPast) day.classList.add("disabled");
-    if(hasBooking) day.classList.add("booked");
-    if(isToday) day.classList.add("today");
-    day.onclick=()=>{if(isPast)return showToast("이전 날짜는 예약 불가");document.querySelectorAll(".day").forEach(c=>c.classList.remove("selected"));day.classList.add("selected");selectedDate=dateStr;updateTimeOptions();};
-    calendar.appendChild(day);
-  }
-}
-function updateTimeOptions(){
-  timeSelect.innerHTML='<option value="">시간 선택</option>';
-  const t=trainers[currentTrainer];
-  const bookedTimes=bookings.filter(b=>b.trainer===t.name && b.date===selectedDate).map(b=>b.time);
-  let available=false;
-  baseTimes.forEach(time=>{
-    const opt=document.createElement("option");
-    opt.textContent=time;
-    opt.value=time;
-    if(bookedTimes.includes(time)){opt.disabled=true;opt.textContent=`${time} (예약됨)`;}else available=true;
-    timeSelect.appendChild(opt);
-  });
-  reserveBtn.disabled=!available;
-}
+function renderCalendar(){calendar.innerHTML="";const now=new Date();const todayZero=new Date(now.getFullYear(),now.getMonth(),now.getDate());const y=now.getFullYear(),m=now.getMonth();const fd=new Date(y,m,1),ld=new Date(y,m+1,0);document.getElementById("monthLabel").textContent=`${y}년 ${m+1}월`;for(let i=0;i<fd.getDay();i++)calendar.appendChild(document.createElement("div"));for(let d=1;d<=ld.getDate();d++){const dateObj=new Date(y,m,d);const dateStr=`${y}-${m+1}-${d}`;const day=document.createElement("div");day.className="day";day.textContent=d;const isPast=dateObj<todayZero;const hasBooking=bookings.some(b=>b.trainer===trainers[currentTrainer].name && b.date===dateStr);if(isPast) day.classList.add("disabled");if(hasBooking) day.classList.add("booked");day.onclick=()=>{if(isPast)return showToast("이전 날짜는 예약 불가");document.querySelectorAll(".day").forEach(c=>c.classList.remove("selected"));day.classList.add("selected");selectedDate=dateStr;updateTimeOptions();};calendar.appendChild(day);}}
+function updateTimeOptions(){timeSelect.innerHTML='<option value="">시간 선택</option>';const t=trainers[currentTrainer];const bookedTimes=bookings.filter(b=>b.trainer===t.name && b.date===selectedDate).map(b=>b.time);let available=false;baseTimes.forEach(time=>{const opt=document.createElement("option");opt.textContent=time;opt.value=time;if(bookedTimes.includes(time)){opt.disabled=true;opt.textContent=`${time} (예약됨)`;}else available=true;timeSelect.appendChild(opt);});reserveBtn.disabled=!available;}
 function showToast(msg){const toast=document.createElement("div");toast.className="toast";toast.textContent=msg;document.body.appendChild(toast);setTimeout(()=>toast.remove(),3000);}
 
-/* ---------------- 예약 ---------------- */
-reserveBtn.onclick=async()=>{
-  const t=trainers[currentTrainer];
-  if(!selectedDate)return showToast("날짜 선택!");
-  const time=timeSelect.value;if(!time)return showToast("시간 선택!");
-  const userId=prompt("예약자 고번:");if(!userId)return;
-  const nickname=prompt("닉네임:");if(!nickname)return;
-  const userRef=doc(db,"users",userId);
-  const userSnap=await getDoc(userRef);
-  if(!userSnap.exists())await setDoc(userRef,{nickname,role:"member",remaining:10,status:"active",registeredAt:new Date()});
-  await addDoc(collection(db,"reservations"),{userId,nickname,trainer:t.name,date:selectedDate,time,createdAt:new Date(),status:"reserved"});
-  showToast(`${nickname}님의 예약 완료!`);
-  bookings.push({trainer:t.name,user:nickname,date:selectedDate,time});
-  renderCalendar();updateTimeOptions();
-};
+reserveBtn.onclick=async()=>{const t=trainers[currentTrainer];if(!selectedDate)return showToast("날짜 선택!");const time=timeSelect.value;if(!time)return showToast("시간 선택!");const userId=prompt("예약자 고번:");if(!userId)return;const nickname=prompt("닉네임:");if(!nickname)return;const userRef=doc(db,"users",userId);const userSnap=await getDoc(userRef);if(!userSnap.exists())await setDoc(userRef,{nickname,role:"member",remaining:10,status:"active",registeredAt:new Date()});await addDoc(collection(db,"reservations"),{userId,nickname,trainer:t.name,date:selectedDate,time,createdAt:new Date(),status:"reserved"});showToast(`${nickname}님의 예약 완료!`);bookings.push({trainer:t.name,user:nickname,date:selectedDate,time});renderCalendar();updateTimeOptions();};
 
-/* ---------------- 관리자 / 공지사항 ---------------- */
+/* 관리자 모달 */
 const adminBtn=document.getElementById("adminBtn"),adminModal=document.getElementById("adminModal"),adminClose=document.getElementById("adminClose"),adminTable=document.getElementById("adminTable");
 const ADMIN_CODE="admin1234";
 adminBtn.onclick=async()=>{const code=prompt("관리자 코드를 입력하세요:");if(code!==ADMIN_CODE)return showToast("🚫 관리자 코드가 올바르지 않습니다.");adminModal.style.display="flex";loadAdminTable();};
 adminClose.onclick=()=>adminModal.style.display="none";
 async function loadAdminTable(){adminTable.innerHTML="";const querySnapshot=await getDocs(collection(db,"reservations"));querySnapshot.forEach(docSnap=>{const d=docSnap.data();const row=document.createElement("tr");row.innerHTML=`<td>${d.userId}</td><td>${d.nickname}</td><td>${d.trainer}</td><td>${d.date}</td><td>${d.time}</td><td>${d.status}</td>`;adminTable.appendChild(row);});}
 
-document.getElementById("noticeBtn").onclick=()=>{alert("📢 [공지사항]\n- 11월 1일부터 신규 PT 이벤트 시작!\n- 예약은 하루 최대 1회 가능합니다.");};
+/* 공지사항 모달 */
+const noticeBtn=document.getElementById("noticeBtn"),noticeModal=document.getElementById("noticeModal"),noticeClose=document.getElementById("noticeClose");
+noticeBtn.onclick=()=>{noticeModal.style.display="flex";};
+noticeClose.onclick=()=>{noticeModal.style.display="none";};
 
 showTrainer(currentTrainer);
 renderCalendar();
