@@ -262,109 +262,46 @@ const trainers=[
 ];
 let currentTrainer=0;
 
-/* 섹션에 카드 3개(이전/현재/다음) 배치 */
-const trainerSection=document.querySelector(".trainer-section");
-trainerSection.innerHTML = `
-  <div class="trainer-card side-card left-card" id="leftCard"></div>
-  <div class="trainer-card center-card" id="centerCard"></div>
-  <div class="trainer-card side-card right-card" id="rightCard"></div>
-`;
-const leftCard=document.getElementById("leftCard");
-const centerCard=document.getElementById("centerCard");
-const rightCard=document.getElementById("rightCard");
+/* 카드 표시 */
+const trainerCard=document.getElementById("trainerCard");
 const trainerTitle=document.getElementById("trainerTitle");
-
-/* 카드 내용 설정 */
-function setTrainerContent(card,index){
-  const t=trainers[(index+trainers.length)%trainers.length];
-  card.innerHTML=`<img src="${t.photo}"><h3>${t.name}</h3><p>${t.intro}</p>`;
+function showTrainer(i){
+  const t=trainers[i];
+  trainerCard.innerHTML=`<img src="${t.photo}"><h3>${t.name}</h3><p>${t.intro}</p>`;
+  trainerTitle.textContent=`${t.name} 일정`;
 }
+showTrainer(currentTrainer);
 
-/* 초기 표시 */
-function updateTrainerCards(){
-  setTrainerContent(leftCard,currentTrainer-1);
-  setTrainerContent(centerCard,currentTrainer);
-  setTrainerContent(rightCard,currentTrainer+1);
-  trainerTitle.textContent=`${trainers[currentTrainer].name} 일정`;
-}
-updateTrainerCards();
+/* 좌우 버튼 */
+document.getElementById("nextTrainer").onclick=()=>{
+  currentTrainer=(currentTrainer+1)%trainers.length;
+  showTrainer(currentTrainer);
+  renderCalendar();
+};
+document.getElementById("prevTrainer").onclick=()=>{
+  currentTrainer=(currentTrainer-1+trainers.length)%trainers.length;
+  showTrainer(currentTrainer);
+  renderCalendar();
+};
 
-/* CSS 스타일 제어용 transform */
-leftCard.style.transform="translateX(-160%) scale(0.9)";
-centerCard.style.transform="translateX(0) scale(1)";
-rightCard.style.transform="translateX(160%) scale(0.9)";
-leftCard.style.opacity=0.5;
-rightCard.style.opacity=0.5;
-
-/* 드래그 관련 */
-let startX=0, currentX=0, isDragging=false;
-
-function onDragStart(x){
-  isDragging=true;
-  startX=x;
-}
-function onDragMove(x){
+/* 스와이프 */
+let startX=0,isDragging=false;
+trainerCard.addEventListener("mousedown",e=>{startX=e.clientX;isDragging=true;});
+window.addEventListener("mouseup",e=>{
   if(!isDragging)return;
-  currentX=x;
-  const diff=currentX-startX;
-  const ratio=Math.max(-1,Math.min(1,diff/200));
-  // 옆카드 살짝 이동
-  leftCard.style.transform=`translateX(${(-160+ratio*60)}%) scale(${0.9+Math.max(0,ratio*0.05)})`;
-  rightCard.style.transform=`translateX(${(160+ratio*60)}%) scale(${0.9-Math.max(0,ratio*0.05)})`;
-  centerCard.style.transform=`translateX(${ratio*40}px) scale(${1-Math.abs(ratio)*0.05})`;
-}
-function onDragEnd(x){
-  if(!isDragging)return;
+  const diff=e.clientX-startX;
+  if(diff>100){document.getElementById("prevTrainer").click();}
+  else if(diff<-100){document.getElementById("nextTrainer").click();}
   isDragging=false;
-  const diff=x-startX;
-  const threshold=100;
-  if(diff<-threshold){ // 왼쪽 드래그 → 다음 트레이너
-    currentTrainer=(currentTrainer+1)%trainers.length;
-    animateSlide("left");
-  }else if(diff>threshold){ // 오른쪽 드래그 → 이전 트레이너
-    currentTrainer=(currentTrainer-1+trainers.length)%trainers.length;
-    animateSlide("right");
-  }else{ // 복귀
-    resetPositions();
-  }
-}
-function resetPositions(){
-  leftCard.style.transition=centerCard.style.transition=rightCard.style.transition="transform .4s ease, opacity .4s ease";
-  leftCard.style.transform="translateX(-160%) scale(0.9)";
-  centerCard.style.transform="translateX(0) scale(1)";
-  rightCard.style.transform="translateX(160%) scale(0.9)";
-  leftCard.style.opacity=0.5;
-  rightCard.style.opacity=0.5;
-  setTimeout(()=>{leftCard.style.transition=centerCard.style.transition=rightCard.style.transition="";},400);
-}
-
-/* 전환 애니메이션 */
-function animateSlide(dir){
-  leftCard.style.transition=centerCard.style.transition=rightCard.style.transition="transform .5s ease, opacity .5s ease";
-  if(dir==="left"){
-    // 오른쪽 카드가 중앙으로, 중앙은 왼쪽으로 이동
-    leftCard.style.transform="translateX(-160%) scale(0.9)";
-    centerCard.style.transform="translateX(-160%) scale(0.9)";
-    rightCard.style.transform="translateX(0) scale(1)";
-  }else{
-    leftCard.style.transform="translateX(0) scale(1)";
-    centerCard.style.transform="translateX(160%) scale(0.9)";
-    rightCard.style.transform="translateX(160%) scale(0.9)";
-  }
-  setTimeout(()=>{
-    updateTrainerCards();
-    resetPositions();
-    renderCalendar();
-  },500);
-}
-
-/* 이벤트 (PC+모바일) */
-centerCard.addEventListener("mousedown",e=>onDragStart(e.clientX));
-window.addEventListener("mousemove",e=>{if(isDragging)onDragMove(e.clientX);});
-window.addEventListener("mouseup",e=>onDragEnd(e.clientX));
-centerCard.addEventListener("touchstart",e=>onDragStart(e.touches[0].clientX));
-centerCard.addEventListener("touchmove",e=>onDragMove(e.touches[0].clientX));
-centerCard.addEventListener("touchend",e=>onDragEnd(e.changedTouches[0].clientX));
+});
+trainerCard.addEventListener("touchstart",e=>{startX=e.touches[0].clientX;isDragging=true;});
+trainerCard.addEventListener("touchend",e=>{
+  if(!isDragging)return;
+  const diff=e.changedTouches[0].clientX-startX;
+  if(diff>80){document.getElementById("prevTrainer").click();}
+  else if(diff<-80){document.getElementById("nextTrainer").click();}
+  isDragging=false;
+});
 
 /* 예약 로직 */
 const bookings=[{trainer:"트레이너 A",user:"홍길동",date:"2025-10-15",time:"14:00"}];
@@ -451,4 +388,3 @@ renderCalendar();
 </script>
 </body>
 </html>
-
