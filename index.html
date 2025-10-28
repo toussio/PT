@@ -46,6 +46,27 @@ body {
 .intro-controls button:hover{transform:translateY(-3px);box-shadow:0 0 18px rgba(249,115,22,.6);}
 .intro-controls{display:flex; gap:10px; justify-content:center;}
 
+/* floating buttons */
+.floating-btn {
+  position:fixed;
+  border:none;
+  border-radius:50px;
+  padding:12px 20px;
+  font-weight:700;
+  color:white;
+  cursor:pointer;
+  background:var(--grad);
+  box-shadow:0 4px 14px rgba(249,115,22,0.3);
+  z-index:1500;
+  transition:all .3s ease;
+}
+.floating-btn:hover {
+  transform:translateY(-3px);
+  box-shadow:0 6px 20px rgba(249,115,22,0.5);
+}
+.floating-notice { top:20px; right:20px; }
+.floating-admin { bottom:20px; right:20px; }
+
 /* 관리자 모달 */
 .admin-modal{
   position:fixed; inset:0;
@@ -113,48 +134,6 @@ h2.title{
 .day.disabled{color:var(--disabled);opacity:0.5;cursor:not-allowed;background:rgba(255,255,255,0.4);}
 .day.today{outline:1px dashed var(--accent);}
 
-/* 시간 선택 및 예약 버튼 */
-.time-select-area {
-  margin-top: 30px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 14px;
-  animation: fadePop .6s ease;
-}
-@keyframes fadePop {
-  from {opacity: 0; transform: scale(0.9);}
-  to {opacity: 1; transform: scale(1);}
-}
-.time-select-area select {
-  width: 80%;
-  background: #fffaf3;
-  border: 2px solid #ffd6a5;
-  border-radius: 16px;
-  padding: 14px 16px;
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--ink);
-  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-}
-.time-select-area select:hover {
-  border-color: #fca65a;
-  background: #fff3e0;
-  box-shadow: 0 4px 12px rgba(249,115,22,0.15);
-}
-button.reserve-btn {
-  width: 80%;
-  background: var(--grad);
-  color: #fff;
-  border: none;
-  border-radius: 20px;
-  padding: 16px 20px;
-  font-size: 17px;
-  font-weight: 700;
-  cursor: pointer;
-  box-shadow: 0 5px 15px rgba(249, 115, 22, 0.3);
-}
-
 /* 토스트 */
 .toast {
   position: fixed;
@@ -188,7 +167,6 @@ button.reserve-btn {
     <p>당신의 몸을 디자인하는 곳 — 최고의 트레이너들과 함께하세요.</p>
     <div class="intro-controls">
       <button id="startBtn">시작하기</button>
-      <button id="adminBtn" style="background:#333;">관리자</button>
     </div>
   </div>
 </div>
@@ -209,13 +187,15 @@ button.reserve-btn {
     </div>
     <div class="calendar" id="calendar"></div>
     <div class="time-select-area">
-      <select id="timeSelect">
-        <option value="">시간 선택</option>
-      </select>
+      <select id="timeSelect"><option value="">시간 선택</option></select>
       <button class="reserve-btn" id="reserveBtn" disabled>예약하기</button>
     </div>
   </div>
 </div>
+
+<!-- floating buttons -->
+<button class="floating-btn floating-notice" id="noticeBtn">📢 공지사항</button>
+<button class="floating-btn floating-admin" id="adminBtn">⚙ 관리자</button>
 
 <!-- 관리자 모달 -->
 <div class="admin-modal" id="adminModal">
@@ -231,9 +211,7 @@ button.reserve-btn {
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-import { 
-  getFirestore, doc, getDoc, setDoc, addDoc, collection, getDocs 
-} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, addDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCmILB2NGpZmkSByWGjN1ZIBlxwQqRpHHg",
@@ -248,6 +226,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+/* ---------------- 기본 UI ---------------- */
 const intro=document.getElementById("intro");
 const main=document.getElementById("main");
 document.getElementById("startBtn").onclick=()=>{intro.style.opacity="0";setTimeout(()=>{intro.style.display="none";main.style.display="block";},600);};
@@ -259,8 +238,7 @@ const trainers=[
   {name:"트레이너 D",photo:"https://via.placeholder.com/260x180?text=D",intro:"재활 트레이너"}
 ];
 
-let currentTrainer=0;
-let selectedDate=null;
+let currentTrainer=0, selectedDate=null, bookings=[];
 const trainerCard=document.getElementById("trainerCard");
 const trainerTitle=document.getElementById("trainerTitle");
 const calendar=document.getElementById("calendar");
@@ -268,15 +246,9 @@ const timeSelect=document.getElementById("timeSelect");
 const reserveBtn=document.getElementById("reserveBtn");
 const baseTimes=["10:00","12:00","14:00","16:00","18:00"];
 
-function showTrainer(i){
-  const t=trainers[i];
-  trainerCard.innerHTML=`<img src="${t.photo}"><h3>${t.name}</h3><p>${t.intro}</p>`;
-  trainerTitle.textContent=`${t.name} 일정`;
-}
+function showTrainer(i){const t=trainers[i];trainerCard.innerHTML=`<img src="${t.photo}"><h3>${t.name}</h3><p>${t.intro}</p>`;trainerTitle.textContent=`${t.name} 일정`;}
 document.getElementById("prevBtn").onclick=()=>{currentTrainer=(currentTrainer-1+trainers.length)%trainers.length;showTrainer(currentTrainer);renderCalendar();};
 document.getElementById("nextBtn").onclick=()=>{currentTrainer=(currentTrainer+1)%trainers.length;showTrainer(currentTrainer);renderCalendar();};
-
-let bookings=[];
 
 function renderCalendar(){
   calendar.innerHTML="";
@@ -298,108 +270,50 @@ function renderCalendar(){
     if(isPast) day.classList.add("disabled");
     if(hasBooking) day.classList.add("booked");
     if(isToday) day.classList.add("today");
-    day.onclick=()=>{
-      if(isPast) return showToast("이전 날짜는 예약할 수 없습니다.");
-      document.querySelectorAll(".day").forEach(c=>c.classList.remove("selected"));
-      day.classList.add("selected");
-      selectedDate=dateStr;
-      updateTimeOptions();
-    };
+    day.onclick=()=>{if(isPast)return showToast("이전 날짜는 예약 불가");document.querySelectorAll(".day").forEach(c=>c.classList.remove("selected"));day.classList.add("selected");selectedDate=dateStr;updateTimeOptions();};
     calendar.appendChild(day);
   }
 }
-
 function updateTimeOptions(){
   timeSelect.innerHTML='<option value="">시간 선택</option>';
   const t=trainers[currentTrainer];
-  const bookedTimes=bookings
-    .filter(b=>b.trainer===t.name && b.date===selectedDate)
-    .map(b=>b.time);
+  const bookedTimes=bookings.filter(b=>b.trainer===t.name && b.date===selectedDate).map(b=>b.time);
   let available=false;
   baseTimes.forEach(time=>{
     const opt=document.createElement("option");
     opt.textContent=time;
     opt.value=time;
-    if(bookedTimes.includes(time)){
-      opt.disabled=true;
-      opt.textContent=`${time} (예약됨)`;
-    } else available=true;
+    if(bookedTimes.includes(time)){opt.disabled=true;opt.textContent=`${time} (예약됨)`;}else available=true;
     timeSelect.appendChild(opt);
   });
   reserveBtn.disabled=!available;
 }
+function showToast(msg){const toast=document.createElement("div");toast.className="toast";toast.textContent=msg;document.body.appendChild(toast);setTimeout(()=>toast.remove(),3000);}
 
-function showToast(msg){
-  const toast=document.createElement("div");
-  toast.className="toast";
-  toast.textContent=msg;
-  document.body.appendChild(toast);
-  setTimeout(()=>toast.remove(),3000);
-}
-
-// 🔹 예약 처리
+/* ---------------- 예약 ---------------- */
 reserveBtn.onclick=async()=>{
   const t=trainers[currentTrainer];
-  if(!selectedDate)return showToast("날짜를 선택하세요!");
-  const time=timeSelect.value;
-  if(!time)return showToast("시간을 선택하세요!");
-  const userId=prompt("예약자 고번을 입력하세요:");
-  if(!userId)return;
-  const nickname=prompt("예약자 닉네임을 입력하세요:");
-  if(!nickname)return;
-
+  if(!selectedDate)return showToast("날짜 선택!");
+  const time=timeSelect.value;if(!time)return showToast("시간 선택!");
+  const userId=prompt("예약자 고번:");if(!userId)return;
+  const nickname=prompt("닉네임:");if(!nickname)return;
   const userRef=doc(db,"users",userId);
   const userSnap=await getDoc(userRef);
-  if(!userSnap.exists()){
-    await setDoc(userRef,{
-      nickname, role:"member", remaining:10, status:"active", registeredAt:new Date()
-    });
-  }
-
-  await addDoc(collection(db,"reservations"),{
-    userId, nickname, trainer:t.name, date:selectedDate, time,
-    createdAt:new Date(), status:"reserved"
-  });
-
-  showToast(`${nickname}님의 ${t.name} ${selectedDate} ${time} 예약 완료!`);
+  if(!userSnap.exists())await setDoc(userRef,{nickname,role:"member",remaining:10,status:"active",registeredAt:new Date()});
+  await addDoc(collection(db,"reservations"),{userId,nickname,trainer:t.name,date:selectedDate,time,createdAt:new Date(),status:"reserved"});
+  showToast(`${nickname}님의 예약 완료!`);
   bookings.push({trainer:t.name,user:nickname,date:selectedDate,time});
-  renderCalendar();
-  updateTimeOptions();
+  renderCalendar();updateTimeOptions();
 };
 
-// 🔹 관리자 모달
-const adminBtn=document.getElementById("adminBtn");
-const adminModal=document.getElementById("adminModal");
-const adminClose=document.getElementById("adminClose");
-const adminTable=document.getElementById("adminTable");
+/* ---------------- 관리자 / 공지사항 ---------------- */
+const adminBtn=document.getElementById("adminBtn"),adminModal=document.getElementById("adminModal"),adminClose=document.getElementById("adminClose"),adminTable=document.getElementById("adminTable");
 const ADMIN_CODE="admin1234";
-
-adminBtn.onclick=async()=>{
-  const code=prompt("관리자 코드를 입력하세요:");
-  if(code!==ADMIN_CODE)return showToast("🚫 관리자 코드가 올바르지 않습니다.");
-  adminModal.style.display="flex";
-  loadAdminTable();
-};
-
+adminBtn.onclick=async()=>{const code=prompt("관리자 코드를 입력하세요:");if(code!==ADMIN_CODE)return showToast("🚫 관리자 코드가 올바르지 않습니다.");adminModal.style.display="flex";loadAdminTable();};
 adminClose.onclick=()=>adminModal.style.display="none";
+async function loadAdminTable(){adminTable.innerHTML="";const querySnapshot=await getDocs(collection(db,"reservations"));querySnapshot.forEach(docSnap=>{const d=docSnap.data();const row=document.createElement("tr");row.innerHTML=`<td>${d.userId}</td><td>${d.nickname}</td><td>${d.trainer}</td><td>${d.date}</td><td>${d.time}</td><td>${d.status}</td>`;adminTable.appendChild(row);});}
 
-async function loadAdminTable(){
-  adminTable.innerHTML="";
-  const querySnapshot=await getDocs(collection(db,"reservations"));
-  querySnapshot.forEach(docSnap=>{
-    const d=docSnap.data();
-    const row=document.createElement("tr");
-    row.innerHTML=`
-      <td>${d.userId}</td>
-      <td>${d.nickname}</td>
-      <td>${d.trainer}</td>
-      <td>${d.date}</td>
-      <td>${d.time}</td>
-      <td>${d.status}</td>
-    `;
-    adminTable.appendChild(row);
-  });
-}
+document.getElementById("noticeBtn").onclick=()=>{alert("📢 [공지사항]\n- 11월 1일부터 신규 PT 이벤트 시작!\n- 예약은 하루 최대 1회 가능합니다.");};
 
 showTrainer(currentTrainer);
 renderCalendar();
