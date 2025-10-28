@@ -6,13 +6,13 @@
 <title>PT 트레이너 예약 시스템</title>
 <style>
 :root {
-  --bg:#FFDEB3;
-  --card:#FFF3E0;
-  --accent:#f97316;
+  --bg:#FFDEB3; /* 전체 배경 */
+  --card:#FFF3E0; /* 카드 / 섹션 배경 */
+  --accent:#f97316; /* 강조색 */
   --grad:linear-gradient(135deg,#fb923c,#f97316,#ea580c);
-  --ink:#2b1d12;
-  --muted:#5c4033;
-  --disabled:#bfa89c;
+  --ink:#2b1d12; /* 진한 갈색 글씨 */
+  --muted:#5c4033; /* 보조 텍스트 색 */
+  --disabled:#bfa89c; /* 비활성 */
 }
 
 body {
@@ -23,12 +23,13 @@ body {
   overflow-x:hidden;
 }
 
-/* 인트로 */
+/* 인트로 영역 */
 .intro-overlay{
   position:fixed; inset:0;
   background:url('https://images.unsplash.com/photo-1558611848-73f7eb4001a1?auto=format&fit=crop&w=1400&q=80') center/cover no-repeat;
   display:flex; flex-direction:column; align-items:center; justify-content:center;
-  z-index:999; text-align:center; color:#fff;
+  z-index:999; text-align:center;
+  color:#fff;
   backdrop-filter:blur(6px);
 }
 .intro-bg{position:absolute; inset:0; background:rgba(0,0,0,0.5);}
@@ -101,12 +102,14 @@ h2.title{
   background:rgba(255,255,255,0.7);
   cursor:pointer;transition:.25s;font-size:14px;min-height:55px;
 }
-.day:hover:not(.disabled):not(.booked){background:rgba(249,115,22,.3);transform:scale(1.05);}
+.day:hover:not(.disabled):not(.booked){
+  background:rgba(249,115,22,.3);
+  transform:scale(1.05);
+}
 .day.selected{outline:2px solid var(--accent);}
 .day.booked{background:var(--grad);color:#fff;}
 .day.disabled{color:var(--disabled);opacity:0.5;cursor:not-allowed;background:rgba(255,255,255,0.4);}
 .day.today{outline:1px dashed var(--accent);}
-.calendar > div:not(.day){visibility:hidden;height:0;}
 
 /* 시간 선택 */
 select,button.reserve-btn{
@@ -120,26 +123,22 @@ button.reserve-btn{
 }
 button.reserve-btn:hover{transform:translateY(-3px);box-shadow:0 0 18px rgba(249,115,22,.6);}
 
-/* ✅ 모달 공통 수정 */
-.modal {
-  display:none;
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.6);
-  justify-content:center;
-  align-items:center;
-  z-index:2000;
-  overflow:hidden;
-}
-.modal-content {
+/* 모달 */
+.modal-content{
   background:var(--card);
   border-radius:18px;
   padding:24px;
   color:var(--ink);
   box-shadow:0 0 20px rgba(0,0,0,.2);
-  max-height:90vh;
-  overflow-y:auto;
 }
+.modal-content h3{color:var(--accent);}
+.modal-content p{color:var(--muted);}
+.modal-content button{
+  background:var(--grad);color:#fff;border:none;
+  padding:10px 20px;border-radius:8px;cursor:pointer;font-weight:600;
+  transition:.3s;
+}
+.modal-content button:hover{transform:translateY(-2px);box-shadow:0 0 15px rgba(249,115,22,.4);}
 </style>
 </head>
 <body>
@@ -185,8 +184,8 @@ button.reserve-btn:hover{transform:translateY(-3px);box-shadow:0 0 18px rgba(249
   <div class="modal-content">
     <h3 id="scheduleTitle"></h3>
     <p id="scheduleDate"></p>
-    <ul id="scheduleList" style="list-style:none;margin:0;padding:0;"></ul>
-    <button>닫기</button>
+    <ul id="scheduleList"></ul>
+    <button id="closeSchedule">닫기</button>
   </div>
 </div>
 
@@ -198,12 +197,155 @@ button.reserve-btn:hover{transform:translateY(-3px);box-shadow:0 0 18px rgba(249
     <p id="modalCode"></p>
     <p id="modalIntro"></p>
     <p id="modalDesc"></p>
-    <button>닫기</button>
+    <button id="closeTrainer">닫기</button>
   </div>
 </div>
 
-<!-- 공지사항 -->
+<script>
+/* 인트로 */
+const intro=document.getElementById("intro");
+const main=document.getElementById("main");
+document.getElementById("startBtn").onclick=()=>{intro.style.opacity="0";setTimeout(()=>{intro.style.display="none";main.style.display="block";},600);};
+
+/* 트레이너 데이터 */
+const trainers=[
+  {name:"트레이너 A",photo:"https://via.placeholder.com/260x180?text=A",intro:"체형 교정 전문가",code:"PT-001",desc:"10년 경력의 전문 체형 교정 코치. 회원 한 명 한 명의 자세를 완벽하게 분석하여 맞춤형 솔루션을 제공합니다."},
+  {name:"트레이너 B",photo:"https://via.placeholder.com/260x180?text=B",intro:"다이어트 코치",code:"PT-002",desc:"체중 감량, 식단 조절, 생활습관 교정까지 도와드립니다. 목표를 함께 이뤄요."},
+  {name:"트레이너 C",photo:"https://via.placeholder.com/260x180?text=C",intro:"근력 향상 전문가",code:"PT-003",desc:"기초 체력 향상부터 고급 근력 트레이닝까지 완벽 지도. 근육은 배신하지 않습니다."},
+  {name:"트레이너 D",photo:"https://via.placeholder.com/260x180?text=D",intro:"재활 트레이너",code:"PT-004",desc:"부상 후 회복을 위한 안전한 프로그램 설계. 정확한 자세와 동작으로 건강을 회복시킵니다."}
+];
+
+/* 트레이너 슬라이드 */
+let currentTrainer=0;
+const trainerCard=document.getElementById("trainerCard");
+const trainerTitle=document.getElementById("trainerTitle");
+const prevBtn=document.getElementById("prevBtn");
+const nextBtn=document.getElementById("nextBtn");
+const trainerModal=document.getElementById("trainerModal");
+const closeTrainer=document.getElementById("closeTrainer");
+const modalImg=document.getElementById("modalImg");
+const modalName=document.getElementById("modalName");
+const modalCode=document.getElementById("modalCode");
+const modalIntro=document.getElementById("modalIntro");
+const modalDesc=document.getElementById("modalDesc");
+
+function showTrainer(i){
+  const t=trainers[i];
+  trainerCard.innerHTML=`<img src="${t.photo}"><h3>${t.name}</h3><p>${t.intro}</p>`;
+  trainerTitle.textContent=`${t.name} 일정`;
+  trainerCard.onclick=()=>openTrainerModal(t);
+}
+function openTrainerModal(t){
+  modalImg.src=t.photo;
+  modalName.textContent=t.name;
+  modalCode.textContent=`고번: ${t.code}`;
+  modalIntro.textContent=t.intro;
+  modalDesc.textContent=t.desc;
+  trainerModal.style.display="flex";
+}
+closeTrainer.onclick=()=>{trainerModal.style.display="none";};
+
+prevBtn.onclick=()=>{currentTrainer=(currentTrainer-1+trainers.length)%trainers.length;showTrainer(currentTrainer);renderCalendar();};
+nextBtn.onclick=()=>{currentTrainer=(currentTrainer+1)%trainers.length;showTrainer(currentTrainer);renderCalendar();};
+
+/* 예약 데이터 */
+const bookings=[
+  {trainer:"트레이너 A",user:"홍길동",date:"2025-10-15",time:"14:00"},
+  {trainer:"트레이너 A",user:"민지",date:"2025-10-15",time:"16:00"},
+  {trainer:"트레이너 B",user:"철수",date:"2025-10-17",time:"12:00"}
+];
+
+/* 캘린더 */
+const calendar=document.getElementById("calendar");
+let selectedDate=null;
+function renderCalendar(){
+  calendar.innerHTML="";
+  const now=new Date();
+  const todayStr=now.toISOString().split("T")[0];
+  const y=now.getFullYear(), m=now.getMonth();
+  const fd=new Date(y,m,1), ld=new Date(y,m+1,0);
+  document.getElementById("monthLabel").textContent=`${y}년 ${m+1}월`;
+
+  for(let i=0;i<fd.getDay();i++)calendar.appendChild(document.createElement("div"));
+
+  for(let d=1;d<=ld.getDate();d++){
+    const dateObj=new Date(y,m,d);
+    const dateStr=`${y}-${m+1}-${d}`;
+    const day=document.createElement("div");
+    day.className="day";
+    day.textContent=d;
+
+    const isPast=dateObj<new Date(now.setHours(0,0,0,0));
+    const hasBooking=bookings.some(b=>b.trainer===trainers[currentTrainer].name && b.date===dateStr);
+    const isToday=dateObj.toDateString()===new Date().toDateString();
+
+    if(isPast) day.classList.add("disabled");
+    if(hasBooking) day.classList.add("booked");
+    if(isToday) day.classList.add("today");
+
+    day.onclick=()=>{
+      if(isPast) return alert("이전 날짜는 예약할 수 없습니다.");
+      document.querySelectorAll(".day").forEach(c=>c.classList.remove("selected"));
+      day.classList.add("selected");
+      selectedDate=dateStr;
+      openScheduleModal(dateStr);
+    };
+    calendar.appendChild(day);
+  }
+}
+
+/* 일정 모달 */
+const scheduleModal=document.getElementById("scheduleModal");
+const scheduleTitle=document.getElementById("scheduleTitle");
+const scheduleDate=document.getElementById("scheduleDate");
+const scheduleList=document.getElementById("scheduleList");
+const closeSchedule=document.getElementById("closeSchedule");
+
+function openScheduleModal(dateStr){
+  const t=trainers[currentTrainer];
+  scheduleTitle.textContent=`${t.name} 예약 현황`;
+  scheduleDate.textContent=`날짜: ${dateStr}`;
+  scheduleList.innerHTML="";
+  const filtered=bookings.filter(b=>b.trainer===t.name && b.date===dateStr);
+  if(filtered.length===0){
+    scheduleList.innerHTML=`<li>예약된 일정이 없습니다.</li>`;
+  } else {
+    filtered.forEach(b=>{
+      const li=document.createElement("li");
+      li.innerHTML=`<span>${b.time}</span> — ${b.user} 님 예약완료`;
+      scheduleList.appendChild(li);
+    });
+  }
+  scheduleModal.style.display="flex";
+}
+closeSchedule.onclick=()=>{scheduleModal.style.display="none";};
+
+/* 예약 */
+const reserveBtn=document.getElementById("reserveBtn");
+const timeSelect=document.getElementById("timeSelect");
+reserveBtn.onclick=()=>{
+  const t=trainers[currentTrainer];
+  if(!selectedDate){alert("날짜를 선택하세요!");return;}
+  if(!timeSelect.value){alert("시간을 선택하세요!");return;}
+  const selDate=new Date(selectedDate);
+  const today=new Date(); today.setHours(0,0,0,0);
+  if(selDate<today){alert("이전 날짜는 예약할 수 없습니다.");return;}
+  const exist=bookings.find(b=>b.trainer===t.name && b.date===selectedDate && b.time===timeSelect.value);
+  if(exist){alert("이미 예약된 시간입니다!");return;}
+  const user=prompt("예약자 이름을 입력하세요:");
+  if(!user)return;
+  bookings.push({trainer:t.name,user,date:selectedDate,time:timeSelect.value});
+  alert(`${t.name}님과 ${selectedDate} ${timeSelect.value} 예약 완료!`);
+  renderCalendar();
+};
+
+showTrainer(currentTrainer);
+renderCalendar();
+</script>
+<!-- 🔔 공지사항 버튼 -->
 <button class="notice-btn" id="openNotice">📢 공지사항</button>
+
+<!-- 🔔 공지사항 모달 -->
 <div class="modal" id="noticeModal">
   <div class="modal-content">
     <h3>📢 공지사항</h3>
@@ -213,82 +355,163 @@ button.reserve-btn:hover{transform:translateY(-3px);box-shadow:0 0 18px rgba(249
       <textarea id="noticeText" placeholder="공지 내용을 입력하세요"></textarea>
       <button id="addNotice">공지 추가</button>
     </div>
-    <button>닫기</button>
+    <button id="closeNotice">닫기</button>
   </div>
 </div>
 
+<style>
+/* 🔔 공지 버튼 */
+.notice-btn {
+  position: fixed; top: 20px; right: 20px;
+  background: var(--grad); color: #fff; border: none;
+  padding: 10px 18px; border-radius: 10px;
+  font-weight: 600; cursor: pointer;
+  box-shadow: 0 0 15px rgba(249,115,22,.4);
+  transition: .3s; z-index: 9999;
+}
+.notice-btn:hover { transform: translateY(-3px); box-shadow: 0 0 20px rgba(249,115,22,.6); }
+
+/* 🔔 공지 모달 내부 */
+.notice-list {
+  text-align: left; max-height: 280px; overflow-y: auto;
+  background: rgba(255,255,255,0.03);
+  padding: 10px; border-radius: 10px; margin-bottom: 12px;
+}
+.notice-item {
+  background: rgba(255,255,255,0.05);
+  padding: 10px 14px; border-radius: 10px; margin-bottom: 8px;
+}
+.notice-item h4 { margin: 0; color: var(--accent); }
+.notice-item p { margin: 5px 0; color: var(--muted); font-size: 14px; }
+.notice-item small { font-size: 12px; color: var(--disabled); }
+
+.add-area input, .add-area textarea {
+  width: 100%; margin-top: 10px; padding: 8px;
+  border: none; border-radius: 8px;
+  font-size: 14px; background: rgba(255,255,255,.1); color: var(--ink);
+}
+.add-area textarea { resize: none; height: 60px; }
+.add-area button { width: 100%; margin-top: 10px; background: var(--grad); color: #fff; border: none; border-radius: 8px; font-weight: 600; padding: 8px; cursor: pointer; }
+.add-area button:hover { box-shadow: 0 0 15px rgba(249,115,22,.4); }
+</style>
+
+<script>
+/* 🔔 공지사항 시스템 */
+const openNotice = document.getElementById("openNotice");
+const noticeModal = document.getElementById("noticeModal");
+const closeNotice = document.getElementById("closeNotice");
+const addNotice = document.getElementById("addNotice");
+const noticeList = document.getElementById("noticeList");
+
+/* 예시 공지 데이터 */
+let notices = [
+  { title: "센터 리모델링 안내", text: "11월 3일~5일 리모델링 공사로 예약이 제한됩니다.", date: "2025-10-27" },
+  { title: "신규 트레이너 모집", text: "작두 PT 센터와 함께할 열정적인 트레이너를 모집합니다.", date: "2025-10-25" }
+];
+
+/* 공지 렌더링 */
+function renderNotices() {
+  noticeList.innerHTML = "";
+  if (notices.length === 0) {
+    noticeList.innerHTML = "<p>등록된 공지사항이 없습니다.</p>";
+    return;
+  }
+  notices.forEach(n => {
+    const div = document.createElement("div");
+    div.className = "notice-item";
+    div.innerHTML = `<h4>${n.title}</h4><p>${n.text}</p><small>📅 ${n.date}</small>`;
+    noticeList.appendChild(div);
+  });
+}
+
+/* 버튼 이벤트 */
+openNotice.onclick = () => {
+  noticeModal.style.display = "flex";
+  renderNotices();
+};
+closeNotice.onclick = () => { noticeModal.style.display = "none"; };
+
+/* 공지 추가 */
+addNotice.onclick = () => {
+  const title = document.getElementById("noticeTitle").value.trim();
+  const text = document.getElementById("noticeText").value.trim();
+  if (!title || !text) { alert("제목과 내용을 모두 입력하세요!"); return; }
+  const date = new Date().toISOString().split("T")[0];
+  notices.unshift({ title, text, date });
+  renderNotices();
+  document.getElementById("noticeTitle").value = "";
+  document.getElementById("noticeText").value = "";
+  alert("공지사항이 추가되었습니다!");
+};
+</script>
+<!-- 🔍 공지 상세 모달 -->
 <div class="modal" id="noticeDetailModal">
   <div class="modal-content">
     <h3 id="detailTitle"></h3>
     <p id="detailText"></p>
     <small id="detailDate"></small>
-    <button>닫기</button>
+    <button id="closeDetail">닫기</button>
   </div>
 </div>
 
+<style>
+/* 공지 상세 모달 추가 스타일 */
+#noticeDetailModal .modal-content {
+  max-width: 480px;
+  text-align: left;
+  padding: 30px;
+}
+#noticeDetailModal h3 {
+  margin-bottom: 10px;
+  color: var(--accent);
+}
+#noticeDetailModal p {
+  color: var(--muted);
+  margin-bottom: 10px;
+  white-space: pre-line;
+  line-height: 1.6;
+}
+#noticeDetailModal small {
+  display: block;
+  color: var(--disabled);
+  margin-bottom: 15px;
+}
+</style>
+
 <script>
-/* 인트로 */
-const intro=document.getElementById("intro");
-const main=document.getElementById("main");
-document.getElementById("startBtn").onclick=()=>{
-  intro.style.opacity="0";
-  setTimeout(()=>{intro.style.display="none";main.style.display="block";},600);
+/* 🔍 공지 상세보기 시스템 */
+const noticeDetailModal = document.getElementById("noticeDetailModal");
+const detailTitle = document.getElementById("detailTitle");
+const detailText = document.getElementById("detailText");
+const detailDate = document.getElementById("detailDate");
+const closeDetail = document.getElementById("closeDetail");
+
+function openNoticeDetail(n) {
+  detailTitle.textContent = n.title;
+  detailText.textContent = n.text;
+  detailDate.textContent = `📅 ${n.date}`;
+  noticeDetailModal.style.display = "flex";
+}
+closeDetail.onclick = () => {
+  noticeDetailModal.style.display = "none";
 };
 
-/* 트레이너 데이터 */
-const trainers=[
-  {name:"트레이너 A",photo:"https://via.placeholder.com/260x180?text=A",intro:"체형 교정 전문가",code:"PT-001",desc:"10년 경력의 전문 체형 교정 코치."},
-  {name:"트레이너 B",photo:"https://via.placeholder.com/260x180?text=B",intro:"다이어트 코치",code:"PT-002",desc:"식단 및 생활습관 교정까지 함께합니다."},
-  {name:"트레이너 C",photo:"https://via.placeholder.com/260x180?text=C",intro:"근력 향상 전문가",code:"PT-003",desc:"기초 체력부터 고급 트레이닝까지 지도."},
-  {name:"트레이너 D",photo:"https://via.placeholder.com/260x180?text=D",intro:"재활 트레이너",code:"PT-004",desc:"부상 후 회복 프로그램 전문."}
-];
-
-let currentTrainer=0;
-const trainerCard=document.getElementById("trainerCard");
-const trainerTitle=document.getElementById("trainerTitle");
-function showTrainer(i){
-  const t=trainers[i];
-  trainerCard.innerHTML=`<img src="${t.photo}"><h3>${t.name}</h3><p>${t.intro}</p>`;
-  trainerTitle.textContent=`${t.name} 일정`;
-}
-showTrainer(currentTrainer);
-
-/* 예약 데이터 */
-const bookings=[
-  {trainer:"트레이너 A",user:"홍길동",date:"2025-10-15",time:"14:00"}
-];
-
-const calendar=document.getElementById("calendar");
-function renderCalendar(){
-  calendar.innerHTML="";
-  const now=new Date();
-  const y=now.getFullYear(), m=now.getMonth();
-  const fd=new Date(y,m,1), ld=new Date(y,m+1,0);
-  document.getElementById("monthLabel").textContent=`${y}년 ${m+1}월`;
-  for(let i=0;i<fd.getDay();i++)calendar.appendChild(document.createElement("div"));
-  for(let d=1;d<=ld.getDate();d++){
-    const dateObj=new Date(y,m,d);
-    const dateStr=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const day=document.createElement("div");
-    day.className="day";
-    day.textContent=d;
-    if(bookings.some(b=>b.trainer===trainers[currentTrainer].name && b.date===dateStr))
-      day.classList.add("booked");
-    day.onclick=()=>alert(`${dateStr} 클릭됨`);
-    calendar.appendChild(day);
+/* 기존 공지 렌더링 함수 수정 */
+function renderNotices() {
+  noticeList.innerHTML = "";
+  if (notices.length === 0) {
+    noticeList.innerHTML = "<p>등록된 공지사항이 없습니다.</p>";
+    return;
   }
-}
-renderCalendar();
-
-/* ✅ 모든 모달 닫기 */
-function closeAllModals(){
-  document.querySelectorAll('.modal').forEach(m=>m.style.display='none');
-}
-document.addEventListener('DOMContentLoaded',()=>{
-  document.querySelectorAll('.modal button').forEach(btn=>{
-    btn.addEventListener('click',closeAllModals);
+  notices.forEach(n => {
+    const div = document.createElement("div");
+    div.className = "notice-item";
+    div.innerHTML = `<h4>${n.title}</h4><p>${n.text.slice(0, 40)}${n.text.length > 40 ? '...' : ''}</p><small>${n.date}</small>`;
+    div.onclick = () => openNoticeDetail(n); // ← 클릭 시 상세 모달 열기
+    noticeList.appendChild(div);
   });
-});
+}
 </script>
 </body>
 </html>
+
