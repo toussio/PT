@@ -733,43 +733,48 @@ function buildTrainerDayGrid(){
       </select>
     </div>
 
-    <!-- ✅ 시간칩을 그리드로 표시 -->
-    <div id="timeGrid"
-      style="
-        display:grid;
-        grid-template-columns:repeat(auto-fill,minmax(90px,1fr));
-        gap:10px;
-        margin-bottom:20px;
-      ">
-    </div>
-
-    <!-- ✅ 버튼을 아래쪽 중앙 정렬 -->
-    <div style="text-align:center;">
-      <button id="trainerTimesApply"
-        class="tab-btn"
-        style="padding:10px 24px;font-weight:700;border-radius:10px;background:var(--grad);color:#fff;">
-        적용
-      </button>
-    </div>
+    <!-- ✅ 세로 정렬 시간칩 -->
+    <div id="timeGrid" style="
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:8px;
+      margin-top:8px;
+    "></div>
   `;
 
   const trainerSelect = area.querySelector("#trainerSelect");
   const daySelect = area.querySelector("#daySelect");
   const timeGrid = area.querySelector("#timeGrid");
-  const applyBtn = area.querySelector("#trainerTimesApply");
 
   const renderTimes = async ()=>{
     timeGrid.innerHTML = "";
     const tName = trainerSelect.value;
     const dName = daySelect.value;
     if(!tName || !dName) return;
+
+    // 시간칩 세로로 추가
     allTimes.forEach(tm=>{
       const label=document.createElement("label");
       label.className="time-chip";
+      label.style.width = "100px";
       label.innerHTML = `<input type="checkbox" value="${tm}"> ${tm}`;
       timeGrid.appendChild(label);
     });
 
+    // ✅ 맨 아래에 적용 버튼 추가
+    const btnWrap = document.createElement("div");
+    btnWrap.style.cssText = "text-align:center;margin-top:14px;";
+    btnWrap.innerHTML = `
+      <button id="trainerTimesApply"
+        class="tab-btn"
+        style="padding:10px 24px;font-weight:700;border-radius:10px;background:var(--grad);color:#fff;">
+        적용
+      </button>
+    `;
+    timeGrid.appendChild(btnWrap);
+
+    // 기존 설정 불러오기
     const snap = await getDoc(doc(db,"trainerSchedule", tName));
     if(snap.exists()){
       const data = snap.data();
@@ -778,24 +783,24 @@ function buildTrainerDayGrid(){
         cb.checked = arr.includes(cb.value);
       });
     }
+
+    // 적용 이벤트
+    const applyBtn = btnWrap.querySelector("#trainerTimesApply");
+    applyBtn.onclick = async ()=>{
+      const checkedTimes = Array.from(timeGrid.querySelectorAll("input:checked")).map(i=>i.value);
+      const ref = doc(db,"trainerSchedule", tName);
+      const snap = await getDoc(ref);
+      const data = snap.exists()? snap.data() : {};
+      data[dName] = checkedTimes;
+      await setDoc(ref, data, { merge:true });
+      showToast(`✅ ${tName}의 ${dName} 요일 시간 저장 완료`);
+    };
   };
 
   trainerSelect.onchange = renderTimes;
   daySelect.onchange = renderTimes;
-
-  applyBtn.onclick = async ()=>{
-    const tName = trainerSelect.value;
-    const dName = daySelect.value;
-    if(!tName || !dName) return showToast("트레이너와 요일을 선택하세요!");
-    const checkedTimes = Array.from(timeGrid.querySelectorAll("input:checked")).map(i=>i.value);
-    const ref = doc(db,"trainerSchedule", tName);
-    const snap = await getDoc(ref);
-    const data = snap.exists()? snap.data() : {};
-    data[dName] = checkedTimes;
-    await setDoc(ref, data, { merge:true });
-    showToast(`✅ ${tName}의 ${dName} 요일 시간 저장 완료`);
-  };
 }
+
 /* =======================
       공지(관리자)
 ======================= */
@@ -900,5 +905,6 @@ init();
 </script>
 </body>
 </html>
+
 
 
