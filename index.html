@@ -331,9 +331,12 @@ startBtn.addEventListener("click", async () => {
   currentUser = { id, nick };
   try {
     // 기존 setDoc
-    await setDoc(doc(db,"users",id), {
-      nickname:nick, role:"member", updatedAt: serverTimestamp()
-    }, { merge:true });
+   await setDoc(doc(db,"users",id), {
+  nickname: nick,
+  role,
+  isAdminVisible: role === "trainer", // ✅ 트레이너일 경우 true
+  updatedAt: serverTimestamp()
+}, { merge: true });
 
     // 🔹 Firestore에서 isAdminVisible 여부 확인
     const userRef = doc(db, "users", id);
@@ -970,6 +973,7 @@ init();
 </script>
 </body>
 </html>
+
 
 
 
