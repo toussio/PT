@@ -632,57 +632,84 @@ document.getElementById("applyTimesAdmin").onclick = async ()=>{
 };
 
 /* =======================
-      시간 설정 - 트레이너(본인 1명, 요일 세로표)
+      시간 설정 - 트레이너 (트레이너 선택 → 요일 선택 → 시간 설정)
 ======================= */
 function buildTrainerDayGrid(){
-  // 이미 만들어졌으면 패스(빈 경우만 생성)
-  if(trainerDayGrid.dataset.ready==="yes") return;
+  const area = timesTrainerBlock;
+  area.innerHTML = `
+    <h3>🕒 나의 시간 설정(트레이너)</h3>
+    <p style="margin:6px 0 12px;color:#7b5d49">트레이너와 요일을 선택 후 시간대를 체크하세요.</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+      <select id="trainerSelect" style="padding:10px;border:2px solid #ffd6a5;border-radius:10px">
+        <option value="">트레이너 선택</option>
+      </select>
+      <select id="daySelect" style="padding:10px;border:2px solid #ffd6a5;border-radius:10px">
+        <option value="">요일 선택</option>
+        ${daysKo.map(d=>`<option value="${d}">${d}</option>`).join("")}
+      </select>
+    </div>
+    <div id="timeGrid" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px"></div>
+    <button id="applyTimesTrainer" class="tab-btn">적용</button>
+  `;
 
-  trainerDayGrid.innerHTML="";
-  daysKo.forEach(dayKo=>{
-    const col=document.createElement("div");
-    col.className="day-column";
-    col.innerHTML = `<h4>${dayKo}</h4>`;
+  // 트레이너 목록 채우기 (관리자면 전체, 트레이너면 본인만)
+  const trainerSelect = area.querySelector("#trainerSelect");
+  if(currentRoleForPanel === "admin"){
+    trainers.forEach(t=>{
+      const opt=document.createElement("option");
+      opt.value=t.name; opt.textContent=t.name;
+      trainerSelect.appendChild(opt);
+    });
+  }else if(currentUser){
+    const opt=document.createElement("option");
+    opt.value=currentUser.nick;
+    opt.textContent=currentUser.nick;
+    trainerSelect.appendChild(opt);
+    trainerSelect.disabled=true;
+  }
+
+  const daySelect = area.querySelector("#daySelect");
+  const timeGrid = area.querySelector("#timeGrid");
+
+  daySelect.onchange = async ()=>{
+    const tName = trainerSelect.value;
+    const dName = daySelect.value;
+    timeGrid.innerHTML = "";
+    if(!tName || !dName) return;
+
+    // 시간 체크박스 생성
     allTimes.forEach(tm=>{
       const chip=document.createElement("label");
       chip.className="time-chip";
-      chip.innerHTML = `<input type="checkbox" value="${tm}" data-day="${dayKo}"/> ${tm}`;
-      col.appendChild(chip);
+      chip.innerHTML = `<input type="checkbox" value="${tm}"> ${tm}`;
+      timeGrid.appendChild(chip);
     });
-    trainerDayGrid.appendChild(col);
-  });
-  trainerDayGrid.dataset.ready="yes";
+
+    // 기존 데이터 불러오기
+    const snap = await getDoc(doc(db,"trainerSchedule", tName));
+    if(snap.exists()){
+      const data = snap.data();
+      const arr = data[dName] || [];
+      timeGrid.querySelectorAll("input").forEach(cb=>{
+        cb.checked = arr.includes(cb.value);
+      });
+    }
+  };
+
+  area.querySelector("#applyTimesTrainer").onclick = async ()=>{
+    const tName = trainerSelect.value;
+    const dName = daySelect.value;
+    if(!tName || !dName) return showToast("트레이너와 요일을 선택하세요!");
+
+    const checkedTimes = Array.from(timeGrid.querySelectorAll("input:checked")).map(i=>i.value);
+    const snap = await getDoc(doc(db,"trainerSchedule", tName));
+    const data = snap.exists()? snap.data() : {};
+    data[dName] = checkedTimes;
+
+    await setDoc(doc(db,"trainerSchedule", tName), data, { merge:true });
+    showToast(`✅ ${tName}의 ${dName} 요일 시간 저장 완료`);
+  };
 }
-
-async function loadTrainerScheduleIntoGrid(){
-  // 본인 닉네임으로 문서 로드
-  const tName = currentUser?.nick || "";
-  if(!tName) return;
-  const snap = await getDoc(doc(db,"trainerSchedule", tName));
-  const data = snap.exists()? snap.data() : {};
-  // 체크 반영
-  trainerDayGrid.querySelectorAll('input[type="checkbox"]').forEach(cb=>{
-    const day = cb.dataset.day;
-    const arr = data[day] || [];
-    cb.checked = arr.includes(cb.value);
-  });
-}
-
-document.getElementById("applyTimesTrainer").onclick = async ()=>{
-  if(!currentUser) return;
-  const tName = currentUser.nick;
-  const result = {};
-  daysKo.forEach(d=> result[d] = []);
-
-  trainerDayGrid.querySelectorAll('input[type="checkbox"]:checked').forEach(cb=>{
-    const day = cb.dataset.day;
-    result[day].push(cb.value);
-  });
-
-  await setDoc(doc(db,"trainerSchedule", tName), result, { merge:true });
-  showToast("✅ (트레이너) 나의 시간 설정 저장됨");
-  updateTimeOptions();
-};
 
 /* =======================
       공지(관리자)
@@ -758,4 +785,5 @@ init();
 </script>
 </body>
 </html>
+
 
