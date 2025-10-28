@@ -333,8 +333,8 @@ startBtn.addEventListener("click", async () => {
     // 기존 setDoc
    await setDoc(doc(db,"users",id), {
   nickname: nick,
-  role,
-  isAdminVisible: role === "trainer", // ✅ 트레이너일 경우 true
+  role: "member", // ✅ 로그인 시 기본값
+  isAdminVisible: false, // 기본값 숨김
   updatedAt: serverTimestamp()
 }, { merge: true });
 
@@ -946,7 +946,6 @@ async function loadRoles(){
     showToast("권한 목록을 불러오지 못했습니다.");
   }
 }
-
 document.getElementById("applyRole").addEventListener("click", async ()=>{
   const id = document.getElementById("roleUserId").value.trim();
   const nick = document.getElementById("roleNickname").value.trim();
@@ -955,8 +954,13 @@ document.getElementById("applyRole").addEventListener("click", async ()=>{
 
   try{
     await setDoc(doc(db,"users",id),{
-      nickname:nick, role, updatedAt: serverTimestamp()
+      nickname:nick,
+      role,
+      // ✅ 트레이너일 경우 관리자 버튼 표시 자동 활성화
+      isAdminVisible: role === "trainer",
+      updatedAt: serverTimestamp()
     }, { merge:true });
+
     showToast(`✅ ${nick}님을 ${role==="trainer"?"트레이너":"일반 유저"}로 설정했습니다.`);
     await loadRoles();
   }catch(e){
@@ -964,7 +968,6 @@ document.getElementById("applyRole").addEventListener("click", async ()=>{
     showToast("권한 설정 중 오류가 발생했습니다.");
   }
 });
-
 /* =======================
       시작
 ======================= */
@@ -973,6 +976,7 @@ init();
 </script>
 </body>
 </html>
+
 
 
 
