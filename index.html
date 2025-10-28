@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PT 트레이너 예약 시스템</title>
 <style>
@@ -23,32 +23,37 @@ body {
 }
 
 /* 인트로 */
-.intro-overlay{
-  position:fixed; inset:0;
-  background:url('https://images.unsplash.com/photo-1558611848-73f7eb4001a1?auto=format&fit=crop&w=1400&q=80') center/cover no-repeat;
-  display:flex; flex-direction:column; align-items:center; justify-content:center;
-  z-index:999; text-align:center; color:#fff; backdrop-filter:blur(6px);
+.intro-overlay {
+  position: fixed; inset: 0;
+  background: url('https://images.unsplash.com/photo-1558611848-73f7eb4001a1?auto=format&fit=crop&w=1400&q=80') center/cover no-repeat;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  z-index:999;text-align:center;color:#fff;backdrop-filter:blur(6px);
 }
-.intro-bg{position:absolute; inset:0; background:rgba(0,0,0,0.4);}
-.intro-content{
-  position:relative; z-index:2;
-  max-width:800px; background:rgba(255,243,224,0.9);
-  padding:40px 30px; border-radius:20px;
-  box-shadow:0 0 20px rgba(249,115,22,0.4); color:var(--ink);
+.intro-bg{position:absolute;inset:0;background:rgba(0,0,0,0.4);}
+.intro-content {
+  position:relative;z-index:2;max-width:800px;background:rgba(255,243,224,0.9);
+  padding:40px 30px;border-radius:20px;box-shadow:0 0 20px rgba(249,115,22,0.4);
+  color:var(--ink);
 }
-.intro-content h1{font-size:2rem; background:var(--grad);
-  -webkit-background-clip:text; -webkit-text-fill-color:transparent;}
-.intro-controls button{
-  background:var(--grad); color:#fff; border:none; padding:10px 24px;
-  border-radius:12px; font-weight:600; cursor:pointer;
-  box-shadow:0 0 10px rgba(249,115,22,.4); transition:.3s;
+.intro-content h1 {
+  font-size:2rem;background:var(--grad);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
 }
-.intro-controls button:hover{transform:translateY(-3px);box-shadow:0 0 18px rgba(249,115,22,.6);}
+.intro-controls button {
+  background:var(--grad);color:#fff;border:none;padding:10px 24px;
+  border-radius:12px;font-weight:600;cursor:pointer;
+  box-shadow:0 0 10px rgba(249,115,22,.4);transition:.3s;
+}
+.intro-controls button:hover {
+  transform:translateY(-3px);
+  box-shadow:0 0 18px rgba(249,115,22,.6);
+}
 
 /* 메인 */
-.main{display:none;padding:40px 20px 80px;animation:fadeInMain 1s ease;}
-@keyframes fadeInMain{from{opacity:0;}to{opacity:1;}}
-h2.title{
+.main { display:none;padding:40px 20px 80px;animation:fadeInMain 1s ease; }
+@keyframes fadeInMain { from{opacity:0;}to{opacity:1;} }
+
+h2.title {
   text-align:center;font-size:1.8rem;
   background:var(--grad);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;
@@ -58,11 +63,11 @@ h2.title{
 /* 트레이너 섹션 */
 .trainer-section {
   position: relative;
-  height: 320px;
+  height: 330px;
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-bottom: 60px;
+  margin-bottom: 80px;
   overflow: hidden;
 }
 .trainer-card {
@@ -75,27 +80,17 @@ h2.title{
   box-shadow: 0 4px 12px rgba(0,0,0,.15);
   text-align: center;
   overflow: hidden;
-  transform-origin: center center;
-  transition: transform .7s cubic-bezier(0.25, 1, 0.5, 1), opacity .5s ease;
+  transform: translate(-50%, -50%);
+  transition: transform .7s cubic-bezier(0.25, 1, 0.5, 1), opacity .6s ease;
 }
-.trainer-card img {
-  width: 100%;
-  height: 160px;
-  object-fit: cover;
-}
-.trainer-card h3 {
-  margin: 10px 0 4px;
-  color: var(--accent);
-}
-.trainer-card p {
-  margin: 0;
-  color: var(--muted);
-}
+.trainer-card img { width: 100%; height: 160px; object-fit: cover; }
+.trainer-card h3 { margin: 10px 0 4px; color: var(--accent); }
+.trainer-card p { margin: 0; color: var(--muted); }
 
 /* 버튼 */
 .trainer-nav {
   position: absolute;
-  bottom: 10px;
+  bottom: -60px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -115,16 +110,11 @@ h2.title{
   box-shadow: 0 4px 12px rgba(249,115,22,.3);
   transition: all .3s ease;
 }
-.nav-btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(249,115,22,.5);
-}
-.nav-btn:active {
-  transform: scale(0.9);
-}
+.nav-btn:hover { transform: translateY(-3px); box-shadow:0 6px 20px rgba(249,115,22,.5); }
+.nav-btn:active { transform: scale(0.9); }
 
 /* 캘린더 */
-.schedule-section{
+.schedule-section {
   max-width:800px;margin:0 auto;
   background:var(--card);
   border-radius:20px;padding:30px;
@@ -152,10 +142,7 @@ h2.title{
   gap: 14px;
   animation: fadePop .6s ease;
 }
-@keyframes fadePop {
-  from {opacity: 0; transform: scale(0.9);}
-  to {opacity: 1; transform: scale(1);}
-}
+@keyframes fadePop { from {opacity: 0; transform: scale(0.9);} to {opacity: 1; transform: scale(1);} }
 
 /* select */
 .time-select-area select {
@@ -180,9 +167,7 @@ h2.title{
   border-color: #f97316;
   box-shadow: 0 0 10px rgba(249,115,22,0.3);
 }
-.time-select-area option[disabled] {
-  color: var(--disabled);
-}
+.time-select-area option[disabled] { color: var(--disabled); }
 
 /* 예약 버튼 */
 button.reserve-btn {
@@ -197,8 +182,6 @@ button.reserve-btn {
   cursor: pointer;
   box-shadow: 0 5px 15px rgba(249, 115, 22, 0.3);
   transition: all .25s ease;
-  position: relative;
-  overflow: hidden;
 }
 button.reserve-btn:disabled {
   background: #e5c7a3;
@@ -236,7 +219,6 @@ button.reserve-btn:hover:not(:disabled) {
 </head>
 <body>
 
-<!-- 인트로 -->
 <div class="intro-overlay" id="intro">
   <div class="intro-bg"></div>
   <div class="intro-content">
@@ -246,7 +228,6 @@ button.reserve-btn:hover:not(:disabled) {
   </div>
 </div>
 
-<!-- 메인 -->
 <div class="main" id="main">
   <h2 class="title">트레이너 예약 시스템</h2>
   <div class="trainer-section">
@@ -276,7 +257,10 @@ button.reserve-btn:hover:not(:disabled) {
 /* 인트로 */
 const intro=document.getElementById("intro");
 const main=document.getElementById("main");
-document.getElementById("startBtn").onclick=()=>{intro.style.opacity="0";setTimeout(()=>{intro.style.display="none";main.style.display="block";},600);};
+document.getElementById("startBtn").onclick=()=>{
+  intro.style.opacity="0";
+  setTimeout(()=>{intro.style.display="none";main.style.display="block";},600);
+};
 
 /* 트레이너 목록 */
 const trainers=[
@@ -291,13 +275,13 @@ const centerCard=document.getElementById("centerCard");
 const rightCard=document.getElementById("rightCard");
 const trainerTitle=document.getElementById("trainerTitle");
 
-/* 카드 내용 설정 */
+/* 카드 내용 */
 function setTrainerContent(card,index){
   const t=trainers[(index+trainers.length)%trainers.length];
   card.innerHTML=`<img src="${t.photo}"><h3>${t.name}</h3><p>${t.intro}</p>`;
 }
 
-/* 초기 표시 */
+/* 카드 업데이트 */
 function updateTrainerCards(){
   setTrainerContent(leftCard,currentTrainer-1);
   setTrainerContent(centerCard,currentTrainer);
@@ -317,15 +301,15 @@ function resetPositions(){
 /* 전환 애니메이션 */
 function animateSlide(dir){
   [leftCard,centerCard,rightCard].forEach(c=>{
-    c.style.transition="transform .7s cubic-bezier(0.25, 1, 0.5, 1), opacity .6s ease";
+    c.style.transition="transform .7s cubic-bezier(0.25,1,0.5,1),opacity .5s ease";
   });
 
-  if(dir==="left"){ // 다음 트레이너로 이동
+  if(dir==="left"){
     centerCard.style.transform="translate(-220%, -50%) scale(0.9)";
     centerCard.style.opacity="0";
     rightCard.style.transform="translate(-50%, -50%) scale(1)";
     rightCard.style.opacity="1";
-  }else{ // 이전 트레이너로 이동
+  }else{
     centerCard.style.transform="translate(120%, -50%) scale(0.9)";
     centerCard.style.opacity="0";
     leftCard.style.transform="translate(-50%, -50%) scale(1)";
@@ -345,17 +329,28 @@ function animateSlide(dir){
 document.getElementById("nextTrainer").onclick=()=>animateSlide("left");
 document.getElementById("prevTrainer").onclick=()=>animateSlide("right");
 
-/* 스와이프 이벤트 */
+/* 스와이프 */
 let startX=0,isDragging=false;
 centerCard.addEventListener("mousedown",e=>{isDragging=true;startX=e.clientX;});
-window.addEventListener("mouseup",e=>{if(!isDragging)return;const diff=e.clientX-startX;if(diff>100)animateSlide("right");else if(diff<-100)animateSlide("left");isDragging=false;});
+window.addEventListener("mouseup",e=>{
+  if(!isDragging)return;
+  const diff=e.clientX-startX;
+  if(diff>100)animateSlide("right");
+  else if(diff<-100)animateSlide("left");
+  isDragging=false;
+});
 centerCard.addEventListener("touchstart",e=>{isDragging=true;startX=e.touches[0].clientX;});
-centerCard.addEventListener("touchend",e=>{const diff=e.changedTouches[0].clientX-startX;if(diff>100)animateSlide("right");else if(diff<-100)animateSlide("left");isDragging=false;});
+centerCard.addEventListener("touchend",e=>{
+  const diff=e.changedTouches[0].clientX-startX;
+  if(diff>100)animateSlide("right");
+  else if(diff<-100)animateSlide("left");
+  isDragging=false;
+});
 
 updateTrainerCards();
 resetPositions();
 
-/* 예약 로직 */
+/* 예약 시스템 */
 const bookings=[{trainer:"트레이너 A",user:"홍길동",date:"2025-10-15",time:"14:00"}];
 const calendar=document.getElementById("calendar");
 let selectedDate=null;
@@ -383,7 +378,13 @@ function renderCalendar(){
     if(isPast) day.classList.add("disabled");
     if(hasBooking) day.classList.add("booked");
     if(isToday) day.classList.add("today");
-    day.onclick=()=>{if(isPast)return showToast("이전 날짜는 예약할 수 없습니다.");document.querySelectorAll(".day").forEach(c=>c.classList.remove("selected"));day.classList.add("selected");selectedDate=dateStr;updateTimeOptions();};
+    day.onclick=()=>{
+      if(isPast)return showToast("이전 날짜는 예약할 수 없습니다.");
+      document.querySelectorAll(".day").forEach(c=>c.classList.remove("selected"));
+      day.classList.add("selected");
+      selectedDate=dateStr;
+      updateTimeOptions();
+    };
     calendar.appendChild(day);
   }
 }
@@ -391,7 +392,7 @@ function renderCalendar(){
 function updateTimeOptions(){
   timeSelect.innerHTML='<option value="">시간 선택</option>';
   const t=trainers[currentTrainer];
-  const bookedTimes=bookings.filter(b=>b.trainer===t.name && b.date===selectedDate).map(b=>b.time);
+  const bookedTimes=bookings.filter(b=>b.trainer===t.name&&b.date===selectedDate).map(b=>b.time);
   let available=false;
   baseTimes.forEach(time=>{
     const opt=document.createElement("option");
