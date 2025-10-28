@@ -554,6 +554,7 @@ function openPanel(role){
     showTab("reservations");
     loadReservationsTable();
     timesAdminBlock.style.display="none";
+    trainerDayGrid.innerHTML = "";
     timesTrainerBlock.style.display="block";
     buildTrainerDayGrid(); // UI 만들고
   }
@@ -673,8 +674,8 @@ document.getElementById("applyTimesAdmin").onclick = async ()=>{
       시간 설정 - 트레이너 (트레이너 선택 → 요일 선택 → 시간 설정)
 ======================= */
 function buildTrainerDayGrid(){
-  const area = timesTrainerBlock;
-  area.innerHTML = `
+ const area = document.getElementById("trainerDayGrid"); 
+area.innerHTML = `
     <h3>🕒 나의 시간 설정(트레이너)</h3>
     <p style="margin:6px 0 12px;color:#7b5d49">트레이너와 요일을 선택 후 시간대를 체크하세요.</p>
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px">
@@ -823,6 +824,7 @@ init();
 </script>
 </body>
 </html>
+
 
 
 
