@@ -330,21 +330,30 @@ startBtn.addEventListener("click", async () => {
 
   currentUser = { id, nick };
   try {
-    // 기존 setDoc
-   await setDoc(doc(db,"users",id), {
-  nickname: nick,
-  role: "member", // ✅ 로그인 시 기본값
-  isAdminVisible: false, // 기본값 숨김
-  updatedAt: serverTimestamp()
-}, { merge: true });
-
-    // 🔹 Firestore에서 isAdminVisible 여부 확인
     const userRef = doc(db, "users", id);
     const userSnap = await getDoc(userRef);
 
+    // ✅ 유저 문서가 없을 때만 기본값으로 생성
+    if (!userSnap.exists()) {
+      await setDoc(userRef, {
+        nickname: nick,
+        role: "member",
+        isAdminVisible: false,
+        updatedAt: serverTimestamp()
+      });
+    } else {
+      // ✅ 이미 존재하면 닉네임만 업데이트 (role/isAdminVisible 유지)
+      await setDoc(userRef, {
+        nickname: nick,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+    }
+
+    // 🔹 Firestore에서 isAdminVisible 여부 확인
+    const updatedSnap = await getDoc(userRef);
     let isVisible = false;
-    if (userSnap.exists()) {
-      const data = userSnap.data();
+    if (updatedSnap.exists()) {
+      const data = updatedSnap.data();
       isVisible = !!data.isAdminVisible; // true일 때만 표시
     }
 
@@ -353,12 +362,12 @@ startBtn.addEventListener("click", async () => {
     adminBtn.style.display = isVisible ? "block" : "none";
 
     // 🔹 인트로 → 메인 화면 전환
-    intro.style.opacity="0";
-    intro.setAttribute("aria-hidden","true");
-    setTimeout(()=>{
-      intro.style.display="none";
-      main.style.display="block";
-      main.setAttribute("aria-hidden","false");
+    intro.style.opacity = "0";
+    intro.setAttribute("aria-hidden", "true");
+    setTimeout(() => {
+      intro.style.display = "none";
+      main.style.display = "block";
+      main.setAttribute("aria-hidden", "false");
     }, 300);
 
     await fetchBookings();
@@ -976,6 +985,7 @@ init();
 </script>
 </body>
 </html>
+
 
 
 
