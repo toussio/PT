@@ -5,65 +5,81 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PT 트레이너 예약 시스템</title>
 <style>
-:root {
-  --bg:#FFDEB3; --card:#FFF3E0; --accent:#f97316;
+:root{
+  --bg:#FFDEB3;--card:#FFF3E0;--accent:#f97316;
   --grad:linear-gradient(135deg,#ffb77a,#f97316,#ea580c);
-  --ink:#2b1d12; --muted:#5c4033; --disabled:#bfa89c;
+  --ink:#2b1d12;--muted:#5c4033;--disabled:#bfa89c;
 }
 body{margin:0;font-family:"Pretendard",sans-serif;background:var(--bg);color:var(--ink);overflow-x:hidden;}
 /* 인트로 */
 .intro-overlay{position:fixed;inset:0;background:url('https://images.unsplash.com/photo-1558611848-73f7eb4001a1?auto=format&fit=crop&w=1400&q=80') center/cover no-repeat;
 display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;text-align:center;color:#fff;backdrop-filter:blur(6px);}
 .intro-bg{position:absolute;inset:0;background:rgba(0,0,0,0.4);}
-.intro-content{position:relative;z-index:2;max-width:800px;background:rgba(255,243,224,0.9);padding:40px 30px;border-radius:20px;
-box-shadow:0 0 20px rgba(249,115,22,0.4);color:var(--ink);}
+.intro-content{position:relative;z-index:2;max-width:800px;background:rgba(255,243,224,0.9);
+padding:40px 30px;border-radius:20px;box-shadow:0 0 20px rgba(249,115,22,0.4);color:var(--ink);}
 .intro-content h1{font-size:2rem;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
 .intro-controls{display:flex;flex-direction:column;gap:10px;align-items:center;}
 .intro-controls input{padding:10px 14px;border-radius:10px;border:2px solid #ffd6a5;width:70%;font-size:15px;}
 .intro-controls button{background:var(--grad);color:#fff;border:none;padding:10px 24px;border-radius:12px;font-weight:600;cursor:pointer;
 box-shadow:0 0 10px rgba(249,115,22,.4);transition:.3s;}
 .intro-controls button:hover{transform:translateY(-3px);box-shadow:0 0 18px rgba(249,115,22,.6);}
+
+/* floating buttons */
 .floating-btn{position:fixed;border:none;border-radius:50px;padding:12px 20px;font-weight:700;color:white;cursor:pointer;background:var(--grad);
 box-shadow:0 4px 14px rgba(249,115,22,0.3);z-index:1500;transition:all .3s ease;}
 .floating-btn:hover{transform:translateY(-3px);box-shadow:0 6px 20px rgba(249,115,22,0.5);}
 .floating-notice{top:20px;right:20px;}
 .floating-admin{bottom:20px;right:20px;}
-/* 공지 */
-.notice-modal{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:3000;}
-.notice-content{background:#fffaf3;border-radius:16px;padding:30px 40px;max-width:600px;width:90%;box-shadow:0 10px 25px rgba(0,0,0,0.3);}
-.notice-content h2{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-top:0;text-align:center;}
+
+/* 공지/관리자 모달 */
+.notice-modal,.admin-modal{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:3000;}
+.notice-content,.admin-content{background:#fffaf3;border-radius:16px;padding:30px 40px;max-width:1000px;width:92%;box-shadow:0 10px 25px rgba(0,0,0,0.3);animation:fadePop .5s ease;}
+.notice-content h2,.admin-content h2{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-top:0;text-align:center;}
 .notice-content ul{list-style:none;padding:0;margin:10px 0;}
-.notice-content li{background:rgba(255,243,224,0.8);border-left:4px solid var(--accent);padding:12px 16px;border-radius:10px;margin:8px 0;}
-.notice-close{float:right;font-weight:700;color:var(--accent);cursor:pointer;font-size:18px;}
-/* 관리자 */
-.admin-modal{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;z-index:2000;}
-.admin-content{background:#fffaf3;padding:30px;border-radius:14px;max-width:950px;width:90%;box-shadow:0 0 20px rgba(0,0,0,.3);}
-.admin-tabs{display:flex;gap:10px;margin-bottom:15px;}
-.tab-btn{flex:1;padding:10px;border:none;border-radius:8px;font-weight:600;cursor:pointer;background:#ffd6a5;}
-.tab-btn.active{background:var(--grad);color:#fff;}
+.notice-content li{background:rgba(255,243,224,0.8);border-left:4px solid var(--accent);padding:12px 16px;border-radius:10px;margin:8px 0;
+box-shadow:0 2px 8px rgba(0,0,0,0.05);}
+.notice-close,.admin-close{float:right;font-weight:700;color:var(--accent);cursor:pointer;font-size:18px;}
+
+/* 관리자 탭 */
+.tab-btns{display:flex;gap:10px;justify-content:center;margin-bottom:15px;flex-wrap:wrap}
+.tab-btn{padding:8px 16px;border:none;border-radius:8px;background:#ffd6a5;font-weight:700;cursor:pointer;}
+.tab-btn.active{background:var(--grad);color:white;}
 .tab-content{display:none;}
-.admin-content table{width:100%;border-collapse:collapse;margin-top:10px;}
-.admin-content th,.admin-content td{border:1px solid #ffd6a5;padding:8px;text-align:center;}
-.admin-close{float:right;cursor:pointer;color:#f97316;font-weight:bold;}
-.trainer-time-box{margin-bottom:10px;}
-.trainer-time-box label{margin-right:6px;}
-/* 메인 */
-.main{display:none;padding:40px 20px 80px;}
-.trainer-section{display:flex;justify-content:center;align-items:center;gap:30px;margin-bottom:40px;}
-.arrow{background:var(--grad);border:none;border-radius:50%;width:55px;height:55px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
-.trainer-card{width:280px;border-radius:20px;background:var(--card);text-align:center;overflow:hidden;}
+.admin-table{width:100%;border-collapse:collapse;margin-top:10px}
+.admin-table th,.admin-table td{border:1px solid #ffd6a5;padding:8px;text-align:center;}
+
+/* 메인 예약 섹션 */
+.main{display:none;padding:40px 20px 80px;animation:fadeInMain 1s ease;}
+h2.title{text-align:center;font-size:1.8rem;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:10px;}
+#trainerTitle{text-align:center;font-size:1.1rem;color:var(--muted);margin-bottom:16px;}
+.trainer-section{display:flex;justify-content:center;align-items:center;gap:30px;margin-bottom:16px;}
+.arrow{background:var(--grad);border:none;border-radius:50%;width:55px;height:55px;display:flex;align-items:center;justify-content:center;
+cursor:pointer;transition:.3s;box-shadow:0 0 10px rgba(249,115,22,.3);}
+.arrow:hover{transform:scale(1.08);box-shadow:0 0 18px rgba(249,115,22,.6);}
+.trainer-card{width:280px;border-radius:20px;background:var(--card);box-shadow:0 4px 10px rgba(0,0,0,.1);
+text-align:center;overflow:hidden;transition:.3s;}
 .trainer-card img{width:100%;height:180px;object-fit:cover;}
 .trainer-card h3{margin:10px 0 4px;color:var(--accent);}
-.schedule-section{max-width:800px;margin:0 auto;background:var(--card);border-radius:20px;padding:30px;}
-.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;}
-.day{text-align:center;padding:10px 0;border-radius:10px;background:rgba(255,255,255,0.7);cursor:pointer;}
+.trainer-card p{margin:0;color:var(--muted);}
+.schedule-section{max-width:820px;margin:0 auto;background:var(--card);border-radius:20px;padding:24px 20px;box-shadow:0 0 20px rgba(0,0,0,.08);}
+.weekdays{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-weight:700;color:var(--muted);margin:0 0 6px;}
+.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-top:6px;padding-bottom:10px;}
+.day{text-align:center;padding:10px 0;border-radius:10px;background:rgba(255,255,255,0.78);cursor:pointer;transition:.25s;font-size:14px;min-height:55px;
+display:flex;align-items:center;justify-content:center;font-weight:600;}
 .day.booked{background:var(--grad);color:#fff;}
 .day.disabled{opacity:.4;cursor:not-allowed;}
+.day:hover:not(.disabled):not(.booked){background:rgba(249,115,22,.25);transform:scale(1.05);}
 .day.selected{outline:2px solid var(--accent);}
-.time-select-area{margin-top:30px;display:flex;flex-direction:column;align-items:center;gap:18px;}
-.time-select-area select{width:85%;background:#fffaf3;border:2px solid #ffd6a5;border-radius:20px;padding:16px 18px;}
-button.reserve-btn{width:85%;background:var(--grad);color:#fff;border:none;border-radius:24px;padding:18px 22px;font-size:17px;font-weight:700;cursor:pointer;}
-.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#fff8ee;color:var(--ink);border:2px solid #ffd6a5;border-radius:14px;padding:12px 24px;}
+.time-select-area{margin-top:18px;display:flex;flex-direction:column;align-items:center;gap:14px;}
+.time-select-area select{width:85%;background:#fffaf3;border:2px solid #ffd6a5;border-radius:20px;padding:14px 16px;font-size:15px;font-weight:600;color:var(--ink);}
+button.reserve-btn{width:85%;background:var(--grad);color:#fff;border:none;border-radius:24px;padding:16px 18px;font-size:17px;font-weight:700;cursor:pointer;}
+button.reserve-btn:disabled{opacity:.6;cursor:not-allowed}
+
+/* 토스트 */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#fff8ee;color:var(--ink);border:2px solid #ffd6a5;border-radius:14px;
+padding:12px 24px;font-weight:600;font-size:15px;box-shadow:0 4px 15px rgba(249,115,22,0.2);animation:fadeInOut 3s ease forwards;}
+@keyframes fadeInOut{0%{opacity:0;transform:translate(-50%,20px);}10%,90%{opacity:1;transform:translate(-50%,0);}100%{opacity:0;transform:translate(-50%,20px);}}
+@keyframes fadePop{from{opacity:0;transform:scale(0.9);}to{opacity:1;transform:scale(1);}}
 </style>
 </head>
 <body>
@@ -85,13 +101,14 @@ button.reserve-btn{width:85%;background:var(--grad);color:#fff;border:none;borde
 <!-- 메인 -->
 <div class="main" id="main">
   <h2 class="title">트레이너 예약 시스템</h2>
+  <h3 id="trainerTitle">트레이너 일정</h3>
   <div class="trainer-section">
     <button class="arrow" id="prevBtn">◀</button>
     <div class="trainer-card" id="trainerCard"></div>
     <button class="arrow" id="nextBtn">▶</button>
   </div>
-
   <div class="schedule-section">
+    <div class="weekdays"><div>일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div>토</div></div>
     <div class="calendar" id="calendar"></div>
     <div class="time-select-area">
       <select id="timeSelect"><option value="">시간 선택</option></select>
@@ -100,11 +117,11 @@ button.reserve-btn{width:85%;background:var(--grad);color:#fff;border:none;borde
   </div>
 </div>
 
-<!-- floating -->
+<!-- floating buttons -->
 <button class="floating-btn floating-notice" id="noticeBtn">📢 공지사항</button>
 <button class="floating-btn floating-admin" id="adminBtn">⚙ 관리자</button>
 
-<!-- 공지사항 -->
+<!-- 공지사항 모달 -->
 <div class="notice-modal" id="noticeModal">
   <div class="notice-content">
     <span class="notice-close" id="noticeClose">✕</span>
@@ -113,184 +130,537 @@ button.reserve-btn{width:85%;background:var(--grad);color:#fff;border:none;borde
   </div>
 </div>
 
-<!-- 관리자 -->
+<!-- 관리자/트레이너 모달 -->
 <div class="admin-modal" id="adminModal">
   <div class="admin-content">
     <span class="admin-close" id="adminClose">✕</span>
-    <h2>⚙ 관리자 패널</h2>
-    <div class="admin-tabs">
-      <button class="tab-btn active" data-tab="reservations">📅 예약관리</button>
-      <button class="tab-btn" data-tab="times">🕒 시간설정</button>
-      <button class="tab-btn" data-tab="notices">📢 공지관리</button>
+    <h2>⚙ 관리자/트레이너 패널</h2>
+    <div class="tab-btns">
+      <button class="tab-btn" data-tab="reservations">예약관리</button>
+      <button class="tab-btn" data-tab="times">시간설정</button>
+      <button class="tab-btn" data-tab="notices">공지관리</button>
+      <button class="tab-btn" data-tab="roles">권한관리</button>
     </div>
 
-    <div class="tab-content" id="tab-reservations" style="display:block;">
-      <table><thead><tr><th>고번</th><th>닉네임</th><th>트레이너</th><th>날짜</th><th>시간</th><th>상태</th><th>관리</th></tr></thead><tbody id="adminTable"></tbody></table>
+    <!-- 예약 관리 -->
+    <div class="tab-content" id="tab-reservations">
+      <h3>📅 예약 목록</h3>
+      <table class="admin-table">
+        <thead><tr><th>고번</th><th>닉네임</th><th>트레이너</th><th>날짜</th><th>시간</th><th>상태</th><th>관리</th></tr></thead>
+        <tbody id="adminTable"></tbody>
+      </table>
     </div>
 
+    <!-- 시간 설정 -->
     <div class="tab-content" id="tab-times">
       <h3>🕒 트레이너별 시간 설정</h3>
+      <p style="margin:6px 0 12px;color:#7b5d49">체크한 시간만 유저 캘린더에 노출됩니다.</p>
       <div id="trainerTimeList"></div>
-      <button id="applyTimes">적용</button>
+      <button id="applyTimes" class="tab-btn" style="margin-top:12px">적용</button>
     </div>
 
+    <!-- 공지 관리 -->
     <div class="tab-content" id="tab-notices">
-      <h3>📢 공지사항 추가</h3>
-      <input id="newNotice" placeholder="공지 내용 입력" style="width:80%;padding:8px;">
-      <button id="addNotice">추가</button>
+      <h3>📢 공지사항 관리</h3>
+      <input id="newNotice" placeholder="공지 내용을 입력하세요" style="width:70%;padding:8px;border:2px solid #ffd6a5;border-radius:10px;">
+      <button id="addNotice" class="tab-btn">추가</button>
+      <ul id="adminNoticeList"></ul>
+    </div>
+
+    <!-- 권한 관리 -->
+    <div class="tab-content" id="tab-roles">
+      <h3>🧑‍💼 권한 관리</h3>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+        <input id="roleUserId" placeholder="고번 입력" style="padding:8px;width:220px;border:2px solid #ffd6a5;border-radius:10px">
+        <input id="roleNickname" placeholder="닉네임 입력" style="padding:8px;width:220px;border:2px solid #ffd6a5;border-radius:10px">
+        <select id="roleSelect" style="padding:8px;border:2px solid #ffd6a5;border-radius:10px">
+          <option value="member">일반 유저</option>
+          <option value="trainer">트레이너</option>
+        </select>
+        <button id="applyRole" class="tab-btn">적용</button>
+      </div>
+      <table class="admin-table">
+        <thead><tr><th>고번</th><th>닉네임</th><th>권한</th></tr></thead>
+        <tbody id="roleTable"></tbody>
+      </table>
     </div>
   </div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, addDoc, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
+/* =======================
+      Firebase 설정
+======================= */
 const firebaseConfig = {
   apiKey: "AIzaSyCmILB2NGpZmkSByWGjN1ZIBlxwQqRpHHg",
   authDomain: "pttt-dc58e.firebaseapp.com",
   projectId: "pttt-dc58e",
   storageBucket: "pttt-dc58e.appspot.com",
   messagingSenderId: "1015121703137",
-  appId: "1:1015121703137:web:b4177af397cc5ed74887a0",
-  measurementId: "G-2T9H6H06BT"
+  appId: "1:1015121703137:web:b4177af397cc5ed74887a0"
 };
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-let currentUser=null;
-const intro=document.getElementById("intro"),main=document.getElementById("main");
-document.getElementById("startBtn").onclick=async()=>{
-  const id=document.getElementById("userId").value.trim();
-  const nick=document.getElementById("nickname").value.trim();
-  if(!id||!nick)return showToast("고번과 닉네임을 입력하세요!");
-  const ref=doc(db,"users",id);
-  const snap=await getDoc(ref);
-  if(!snap.exists()) await setDoc(ref,{nickname:nick,role:"member",createdAt:new Date()});
-  currentUser={id,nick,...(snap.exists()?snap.data():{role:"member"})};
-  intro.style.display="none";main.style.display="block";
+/* =======================
+      전역 상태/상수
+======================= */
+const ADMIN_CODE = "admin1234";
+const TRAINER_CODE = "trainer1234";
+
+let currentUser = null;        // {id, nick}
+let currentRoleForPanel = null; // "admin" | "trainer"
+let currentTrainer = 0;
+let selectedDate = null;
+let bookings = []; // {id, userId, nickname, trainer, date, time, status}
+
+/* 트레이너 목록 */
+const trainers = [
+  {name:"트레이너 A",photo:"https://via.placeholder.com/260x180?text=A",intro:"체형 교정 전문가"},
+  {name:"트레이너 B",photo:"https://via.placeholder.com/260x180?text=B",intro:"다이어트 코치"},
+  {name:"트레이너 C",photo:"https://via.placeholder.com/260x180?text=C",intro:"근력 향상 전문가"},
+  {name:"트레이너 D",photo:"https://via.placeholder.com/260x180?text=D",intro:"재활 트레이너"}
+];
+
+/* 시간 후보(분단위 커스텀 원하면 여기서 확장) */
+const allTimes = ["08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00"];
+
+/* =======================
+      엘리먼트 참조
+======================= */
+const intro = document.getElementById("intro");
+const main = document.getElementById("main");
+const startBtn = document.getElementById("startBtn");
+
+const trainerCard = document.getElementById("trainerCard");
+const calendar = document.getElementById("calendar");
+const timeSelect = document.getElementById("timeSelect");
+const reserveBtn = document.getElementById("reserveBtn");
+const trainerTitle = document.getElementById("trainerTitle");
+
+const adminBtn = document.getElementById("adminBtn");
+const adminModal = document.getElementById("adminModal");
+const adminClose = document.getElementById("adminClose");
+const adminTable = document.getElementById("adminTable");
+
+const noticeBtn = document.getElementById("noticeBtn");
+const noticeModal = document.getElementById("noticeModal");
+const noticeClose = document.getElementById("noticeClose");
+const noticeList = document.getElementById("noticeList");
+
+// Admin tabs
+const tabBtns = document.querySelectorAll(".tab-btn");
+const tabReservations = document.getElementById("tab-reservations");
+const tabTimes = document.getElementById("tab-times");
+const tabNotices = document.getElementById("tab-notices");
+const tabRoles = document.getElementById("tab-roles");
+const trainerTimeList = document.getElementById("trainerTimeList");
+const adminNoticeList = document.getElementById("adminNoticeList");
+const roleTable = document.getElementById("roleTable");
+
+/* =======================
+      공통 유틸
+======================= */
+function showToast(msg){
+  const t=document.createElement("div");
+  t.className="toast"; t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(),3000);
+}
+
+/* =======================
+      로그인(인트로)
+======================= */
+startBtn.onclick = async () => {
+  const id = document.getElementById("userId").value.trim();
+  const nick = document.getElementById("nickname").value.trim();
+  if(!id || !nick) return showToast("고번과 닉네임을 입력하세요!");
+
+  currentUser = { id, nick };
+  // 사용자 기본 role이 없으면 member로 등록/병합
+  await setDoc(doc(db,"users",id),{
+    nickname:nick, role:"member", updatedAt:new Date()
+  }, { merge:true });
+
+  intro.style.opacity="0";
+  setTimeout(()=>{ intro.style.display="none"; main.style.display="block"; }, 500);
+
+  await fetchBookings();       // 예약 로드
+  await loadNoticesForUsers(); // 공지 로드
+  showTrainer(currentTrainer);
 };
 
-const trainers=[{name:"트레이너 A"},{name:"트레이너 B"},{name:"트레이너 C"},{name:"트레이너 D"}];
-let currentTrainer=0,selectedDate=null,bookings=[];
-const trainerCard=document.getElementById("trainerCard"),calendar=document.getElementById("calendar"),
-timeSelect=document.getElementById("timeSelect"),reserveBtn=document.getElementById("reserveBtn");
+/* =======================
+      트레이너/캘린더
+======================= */
+document.getElementById("prevBtn").onclick = () => {
+  currentTrainer = (currentTrainer - 1 + trainers.length) % trainers.length;
+  showTrainer(currentTrainer);
+};
+document.getElementById("nextBtn").onclick = () => {
+  currentTrainer = (currentTrainer + 1) % trainers.length;
+  showTrainer(currentTrainer);
+};
 
-function showTrainer(i){trainerCard.innerHTML=`<img src='https://via.placeholder.com/260x180?text=${trainers[i].name}'><h3>${trainers[i].name}</h3>`;}
-document.getElementById("prevBtn").onclick=()=>{currentTrainer=(currentTrainer-1+trainers.length)%trainers.length;showTrainer(currentTrainer);renderCalendar();};
-document.getElementById("nextBtn").onclick=()=>{currentTrainer=(currentTrainer+1)%trainers.length;showTrainer(currentTrainer);renderCalendar();};
+function showTrainer(i){
+  const t = trainers[i];
+  trainerCard.innerHTML = `<img src="${t.photo}"><h3>${t.name}</h3><p>${t.intro}</p>`;
+  trainerTitle.textContent = `${t.name} 일정`;
+  renderCalendar();
+}
 
 function renderCalendar(){
-  calendar.innerHTML="";
-  const now=new Date(),today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
-  const y=now.getFullYear(),m=now.getMonth();const fd=new Date(y,m,1),ld=new Date(y,m+1,0);
-  for(let i=0;i<fd.getDay();i++)calendar.appendChild(document.createElement("div"));
+  calendar.innerHTML = "";
+  const now=new Date();
+  const todayZero=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  const y=now.getFullYear(), m=now.getMonth();
+  const fd=new Date(y,m,1), ld=new Date(y,m+1,0);
+
+  // 요일 헤더는 상단 .weekdays 로 표시됨
+  for(let i=0;i<fd.getDay();i++){
+    const sp=document.createElement("div"); calendar.appendChild(sp);
+  }
   for(let d=1;d<=ld.getDate();d++){
-    const date=new Date(y,m,d);const dateStr=`${y}-${m+1}-${d}`;
-    const el=document.createElement("div");el.className="day";el.textContent=d;
-    if(date<today)el.classList.add("disabled");
-    el.onclick=()=>{if(el.classList.contains("disabled"))return;document.querySelectorAll(".day").forEach(x=>x.classList.remove("selected"));
-      el.classList.add("selected");selectedDate=dateStr;updateTimeOptions();};
-    calendar.appendChild(el);
+    const dateObj=new Date(y,m,d);
+    const dateStr = `${y}-${m+1}-${d}`; // zero pad 없이 저장/비교
+    const day=document.createElement("div");
+    day.className="day"; day.textContent=d;
+
+    if(dateObj < todayZero) day.classList.add("disabled");
+    const hasBooking = bookings.some(b=>b.trainer===trainers[currentTrainer].name && b.date===dateStr);
+    if(hasBooking) day.classList.add("booked");
+
+    day.onclick = () => {
+      if(day.classList.contains("disabled")) return showToast("이전 날짜는 예약 불가");
+      document.querySelectorAll(".day").forEach(c=>c.classList.remove("selected"));
+      day.classList.add("selected");
+      selectedDate = dateStr;
+      updateTimeOptions();
+    };
+
+    calendar.appendChild(day);
   }
 }
 
 async function updateTimeOptions(){
-  timeSelect.innerHTML='<option value="">시간 선택</option>';
-  const trainer=trainers[currentTrainer].name;
-  const timeDoc=await getDoc(doc(db,"settings","trainerTimes"));
-  const available=timeDoc.exists()?timeDoc.data()[trainer]||[]:["10:00","12:00","14:00","16:00","18:00"];
-  available.forEach(t=>{
+  timeSelect.innerHTML = '<option value="">시간 선택</option>';
+  if(!selectedDate){ reserveBtn.disabled=true; return; }
+
+  const t = trainers[currentTrainer];
+  // 관리자 설정된 시간 로드
+  const setSnap = await getDoc(doc(db,"settings","trainerTimes"));
+  const availableTimes = setSnap.exists() ? (setSnap.data()[t.name] || allTimes) : allTimes;
+
+  const bookedTimes = bookings
+    .filter(b=>b.trainer===t.name && b.date===selectedDate)
+    .map(b=>b.time);
+
+  let hasAvail = false;
+  availableTimes.forEach(time=>{
     const opt=document.createElement("option");
-    opt.value=t;opt.textContent=t;
+    opt.value=time;
+    opt.textContent = bookedTimes.includes(time) ? `${time} (예약됨)` : time;
+    if(bookedTimes.includes(time)) opt.disabled = true; else hasAvail = true;
     timeSelect.appendChild(opt);
   });
-  reserveBtn.disabled=available.length===0;
+  reserveBtn.disabled = !hasAvail;
 }
 
-function showToast(m){const t=document.createElement("div");t.className="toast";t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),3000);}
+/* 예약 생성 */
+reserveBtn.onclick = async ()=>{
+  if(!currentUser) return showToast("로그인이 필요합니다!");
+  if(!selectedDate) return showToast("날짜를 선택하세요!");
+  const time = timeSelect.value;
+  if(!time) return showToast("시간을 선택하세요!");
 
-reserveBtn.onclick=async()=>{
-  if(!currentUser)return showToast("로그인이 필요합니다!");
-  const trainer=trainers[currentTrainer].name;if(!selectedDate)return showToast("날짜 선택!");const time=timeSelect.value;if(!time)return showToast("시간 선택!");
-  await addDoc(collection(db,"reservations"),{userId:currentUser.id,nickname:currentUser.nick,trainer,date:selectedDate,time,status:"reserved",createdAt:new Date()});
-  showToast("예약 완료!");
+  const t = trainers[currentTrainer];
+
+  // 중복예약 방지(같은 트레이너/날짜/시간)
+  const dup = bookings.find(b=>b.trainer===t.name && b.date===selectedDate && b.time===time);
+  if(dup) return showToast("이미 예약된 시간입니다!");
+
+  // 하루 1회 제한(원하면 제거 가능)
+  const dayDup = bookings.find(b=>b.userId===currentUser.id && b.date===selectedDate);
+  if(dayDup) return showToast("하루 1회만 예약 가능합니다!");
+
+  await addDoc(collection(db,"reservations"),{
+    userId: currentUser.id,
+    nickname: currentUser.nick,
+    trainer: t.name,
+    date: selectedDate,
+    time,
+    status: "reserved",
+    createdAt: new Date()
+  });
+
+  showToast(`${currentUser.nick}님의 ${t.name} ${selectedDate} ${time} 예약 완료!`);
+  await fetchBookings();
+  updateTimeOptions();
 };
 
-/* 관리자 */
-const adminBtn=document.getElementById("adminBtn"),adminModal=document.getElementById("adminModal"),adminClose=document.getElementById("adminClose");
-const adminTabs=document.querySelectorAll(".tab-btn"),tabContents=document.querySelectorAll(".tab-content");
-adminTabs.forEach(btn=>btn.onclick=()=>{adminTabs.forEach(b=>b.classList.remove("active"));btn.classList.add("active");
-  tabContents.forEach(tc=>tc.style.display=tc.id==="tab-"+btn.dataset.tab?"block":"none");});
-
-const ADMIN_CODE="admin1234";
-adminBtn.onclick=async()=>{const c=prompt("관리자 코드를 입력하세요:");if(c!==ADMIN_CODE)return showToast("🚫 관리자 코드 오류");adminModal.style.display="flex";loadReservations();loadTimeSettings();loadNotices();};
-adminClose.onclick=()=>adminModal.style.display="none";
-
-async function loadReservations(){
-  const q=await getDocs(collection(db,"reservations"));const t=document.getElementById("adminTable");t.innerHTML="";
-  q.forEach(s=>{const d=s.data();const r=document.createElement("tr");
-    r.innerHTML=`<td>${d.userId}</td><td>${d.nickname}</td><td>${d.trainer}</td><td>${d.date}</td><td>${d.time}</td><td>${d.status}</td>
-    <td><button onclick="cancelReservation('${s.id}')">취소</button></td>`;t.appendChild(r);});
-}
-window.cancelReservation=async(id)=>{await updateDoc(doc(db,"reservations",id),{status:"cancelled"});showToast("예약 취소됨");loadReservations();};
-
-/* 시간 설정 */
-const trainerTimeList=document.getElementById("trainerTimeList"),allTimes=["08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17...00","18:00"];
-async function loadTimeSettings(){
-  const snap=await getDoc(doc(db,"settings","trainerTimes"));
-  const data=snap.exists()?snap.data():{};
-  trainerTimeList.innerHTML="";
-  trainers.forEach(t=>{
-    const div=document.createElement("div");
-    div.className="trainer-time-box";
-    div.innerHTML=`<h4>${t.name}</h4>`+
-      allTimes.map(time=>{
-        const checked=data[t.name]?.includes(time)?"checked":"";
-        return `<label><input type="checkbox" value="${time}" ${checked}>${time}</label>`;
-      }).join(" ");
-    trainerTimeList.appendChild(div);
-  });
-}
-document.getElementById("applyTimes").onclick=async()=>{
-  const boxes=trainerTimeList.querySelectorAll(".trainer-time-box");
-  const result={};
-  boxes.forEach(b=>{
-    const name=b.querySelector("h4").textContent;
-    const selected=Array.from(b.querySelectorAll("input:checked")).map(i=>i.value);
-    result[name]=selected;
-  });
-  await setDoc(doc(db,"settings","trainerTimes"),result);
-  showToast("✅ 시간 설정 저장됨");
-};
-
-/* 공지사항 */
-const noticeList=document.getElementById("noticeList");
-async function loadNotices(){
-  const q=await getDocs(collection(db,"notices"));noticeList.innerHTML="";
+/* =======================
+      예약 데이터 로딩
+======================= */
+async function fetchBookings(){
+  bookings = [];
+  const q = await getDocs(collection(db,"reservations"));
   q.forEach(s=>{
     const d=s.data();
+    bookings.push({ id:s.id, ...d });
+  });
+  renderCalendar();
+}
+
+/* =======================
+      공지사항 (유저 보기)
+======================= */
+noticeBtn.onclick = async ()=>{
+  noticeModal.style.display="flex";
+  await loadNoticesForUsers();
+};
+noticeClose.onclick = ()=> noticeModal.style.display="none";
+
+async function loadNoticesForUsers(){
+  noticeList.innerHTML="";
+  const q=await getDocs(collection(db,"notices"));
+  const arr = []; q.forEach(s=>arr.push({id:s.id, ...s.data()}));
+  arr.sort((a,b)=> (b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+  arr.forEach(n=>{
     const li=document.createElement("li");
-    li.textContent=d.message;
-    li.onclick=async()=>{if(confirm("삭제하시겠습니까?")){await deleteDoc(doc(db,"notices",s.id));loadNotices();}};
+    li.textContent = n.message;
     noticeList.appendChild(li);
   });
 }
-document.getElementById("addNotice").onclick=async()=>{
-  const msg=document.getElementById("newNotice").value.trim();
-  if(!msg)return showToast("내용 입력!");
-  await addDoc(collection(db,"notices"),{message:msg,createdAt:new Date()});
-  document.getElementById("newNotice").value="";
-  loadNotices();
-  showToast("📢 공지 추가됨");
+
+/* =======================
+      관리자/트레이너 패널
+======================= */
+adminBtn.onclick = async ()=>{
+  if(!currentUser) return showToast("먼저 로그인하세요!");
+  const code = prompt("관리자 또는 트레이너 코드를 입력하세요:");
+  if(code===ADMIN_CODE){
+    currentRoleForPanel = "admin";
+    openPanel("admin");
+  }else if(code===TRAINER_CODE){
+    currentRoleForPanel = "trainer";
+    openPanel("trainer");
+  }else{
+    showToast("🚫 잘못된 코드입니다.");
+  }
 };
 
-/* 공지 모달 */
-document.getElementById("noticeBtn").onclick=()=>{document.getElementById("noticeModal").style.display="flex";loadNotices();};
-document.getElementById("noticeClose").onclick=()=>document.getElementById("noticeModal").style.display="none";
+adminClose.onclick = ()=> adminModal.style.display="none";
 
-showTrainer(currentTrainer);
-renderCalendar();
+function openPanel(role){
+  adminModal.style.display="flex";
+  // 탭 초기화
+  document.querySelectorAll(".tab-content").forEach(el=>el.style.display="none");
+  tabBtns.forEach(b=>b.classList.remove("active"));
+
+  if(role==="admin"){
+    // 모든 탭 열람 가능
+    showTab("reservations");
+    document.querySelector('[data-tab="reservations"]').style.display="";
+    document.querySelector('[data-tab="times"]').style.display="";
+    document.querySelector('[data-tab="notices"]').style.display="";
+    document.querySelector('[data-tab="roles"]').style.display="";
+    loadReservationsTable(); loadTimeSettingsUI(); loadAdminNotices(); loadRoles();
+  }else{
+    // 트레이너: 예약관리만 (자기 예약만)
+    showTab("reservations");
+    document.querySelector('[data-tab="reservations"]').style.display="";
+    document.querySelector('[data-tab="times"]').style.display="none";
+    document.querySelector('[data-tab="notices"]').style.display="none";
+    document.querySelector('[data-tab="roles"]').style.display="none";
+    loadReservationsTable(); // 내부에서 role에 따라 필터링
+  }
+}
+
+// 탭 버튼 핸들러
+tabBtns.forEach(btn=>{
+  btn.onclick = ()=>{
+    const tab = btn.getAttribute("data-tab");
+    showTab(tab);
+    if(tab==="reservations") loadReservationsTable();
+    if(tab==="times") loadTimeSettingsUI();
+    if(tab==="notices") loadAdminNotices();
+    if(tab==="roles") loadRoles();
+  };
+});
+
+function showTab(tab){
+  document.querySelectorAll(".tab-content").forEach(el=>el.style.display="none");
+  document.getElementById(`tab-${tab}`).style.display="block";
+  tabBtns.forEach(b=>b.classList.remove("active"));
+  document.querySelector(`.tab-btn[data-tab="${tab}"]`).classList.add("active");
+}
+
+/* 예약 테이블(관리/트레이너 공용) */
+async function loadReservationsTable(){
+  adminTable.innerHTML="";
+  await fetchBookings();
+  const role = currentRoleForPanel;
+  const filtered = (role==="trainer")
+    ? bookings.filter(b=>b.trainer===currentUser.nick) // 트레이너 닉네임과 트레이너명 일치 가정
+    : bookings;
+
+  // 최근순 정렬(원하면 다른 기준으로)
+  filtered.sort((a,b)=>{
+    const ad=new Date(a.date), bd=new Date(b.date);
+    if(ad.getTime()===bd.getTime()) return a.time.localeCompare(b.time);
+    return bd.getTime()-ad.getTime();
+  });
+
+  filtered.forEach(b=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML=`
+      <td>${b.userId}</td>
+      <td>${b.nickname}</td>
+      <td>${b.trainer}</td>
+      <td>${b.date}</td>
+      <td>${b.time}</td>
+      <td>${b.status}</td>
+      <td>
+        <button data-id="${b.id}" class="btn-cancel" style="padding:4px 8px;border:none;border-radius:8px;background:#ffb4a2;cursor:pointer">취소</button>
+      </td>
+    `;
+    adminTable.appendChild(tr);
+  });
+
+  adminTable.querySelectorAll(".btn-cancel").forEach(btn=>{
+    btn.onclick = async ()=>{
+      const id = btn.getAttribute("data-id");
+      if(!confirm("이 예약을 취소하시겠습니까?")) return;
+      await deleteDoc(doc(db,"reservations",id));
+      showToast("예약이 취소되었습니다.");
+      loadReservationsTable();
+      fetchBookings(); // 유저 화면 동기화
+    };
+  });
+}
+
+/* =======================
+      시간 설정(관리자)
+======================= */
+async function loadTimeSettingsUI(){
+  trainerTimeList.innerHTML="";
+  const snap = await getDoc(doc(db,"settings","trainerTimes"));
+  const data = snap.exists()? snap.data() : {};
+
+  trainers.forEach(t=>{
+    const div=document.createElement("div");
+    div.style.cssText="border:1px solid #ffd6a5;border-radius:12px;padding:10px 12px;margin:10px 0;background:#fff";
+    div.innerHTML = `<h4 style="margin:6px 0 8px;color:#b45309">${t.name}</h4>`;
+    const box=document.createElement("div");
+    box.style.cssText="display:flex;flex-wrap:wrap;gap:8px";
+    allTimes.forEach(tm=>{
+      const checked = (data[t.name]||[]).includes(tm) ? "checked" : "";
+      const label = document.createElement("label");
+      label.style.cssText="background:#fffaf3;border:1px solid #ffd6a5;border-radius:10px;padding:6px 8px;display:flex;gap:6px;align-items:center";
+      label.innerHTML = `<input type="checkbox" value="${tm}" ${checked}/> ${tm}`;
+      box.appendChild(label);
+    });
+    div.appendChild(box);
+    trainerTimeList.appendChild(div);
+  });
+}
+
+document.getElementById("applyTimes").onclick = async ()=>{
+  const blocks = trainerTimeList.querySelectorAll("> div");
+  const result = {};
+
+  // 각 블록은 "h4 + 체크박스들" 구조
+  trainerTimeList.querySelectorAll("div").forEach(container=>{
+    const h4 = container.querySelector("h4");
+    if(!h4) return; // 외곽 div 제외
+    const name = h4.textContent.trim();
+    const selected = Array.from(container.querySelectorAll('input[type="checkbox"]:checked')).map(i=>i.value);
+    result[name] = selected;
+  });
+
+  await setDoc(doc(db,"settings","trainerTimes"), result);
+  showToast("✅ 시간 설정 저장됨");
+  // 저장 후 유저 화면도 최신 시간 반영
+  updateTimeOptions();
+};
+
+/* =======================
+      공지 관리(관리자)
+======================= */
+async function loadAdminNotices(){
+  adminNoticeList.innerHTML="";
+  const q=await getDocs(collection(db,"notices"));
+  const arr=[]; q.forEach(s=>arr.push({id:s.id, ...s.data()}));
+  arr.sort((a,b)=> (b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+  arr.forEach(n=>{
+    const li=document.createElement("li");
+    li.style.cssText="background:#fff;border:1px solid #ffd6a5;border-radius:12px;padding:10px 12px;margin:8px 0;display:flex;justify-content:space-between;align-items:center";
+    li.innerHTML = `<span>${n.message}</span>
+      <button data-id="${n.id}" class="btn-del" style="border:none;border-radius:8px;padding:6px 10px;background:#ffb4a2;cursor:pointer">삭제</button>`;
+    adminNoticeList.appendChild(li);
+  });
+  adminNoticeList.querySelectorAll(".btn-del").forEach(btn=>{
+    btn.onclick = async ()=>{
+      const id = btn.getAttribute("data-id");
+      if(!confirm("해당 공지를 삭제할까요?")) return;
+      await deleteDoc(doc(db,"notices",id));
+      loadAdminNotices();
+      showToast("🗑️ 공지 삭제됨");
+      loadNoticesForUsers(); // 유저 모달도 최신화
+    };
+  });
+}
+
+document.getElementById("addNotice").onclick = async ()=>{
+  const msg = (document.getElementById("newNotice").value || "").trim();
+  if(!msg) return showToast("공지 내용을 입력하세요!");
+  await addDoc(collection(db,"notices"),{ message:msg, createdAt:new Date() });
+  document.getElementById("newNotice").value="";
+  showToast("📢 공지 추가됨");
+  loadAdminNotices();
+  loadNoticesForUsers();
+};
+
+/* =======================
+      권한 관리(관리자)
+======================= */
+async function loadRoles(){
+  roleTable.innerHTML="";
+  const q=await getDocs(collection(db,"users"));
+  const arr=[]; q.forEach(s=>arr.push({id:s.id, ...s.data()}));
+  // 최근 업데이트순
+  arr.sort((a,b)=> (b.updatedAt?.seconds||0)-(a.updatedAt?.seconds||0));
+  arr.forEach(u=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML = `<td>${u.id}</td><td>${u.nickname||""}</td><td>${u.role||"member"}</td>`;
+    roleTable.appendChild(tr);
+  });
+}
+
+document.getElementById("applyRole").onclick = async ()=>{
+  const id = document.getElementById("roleUserId").value.trim();
+  const nick = document.getElementById("roleNickname").value.trim();
+  const role = document.getElementById("roleSelect").value;
+  if(!id || !nick) return showToast("고번과 닉네임을 입력하세요!");
+
+  await setDoc(doc(db,"users",id),{
+    nickname:nick, role, updatedAt:new Date()
+  }, { merge:true });
+
+  showToast(`✅ ${nick}님을 ${role==="trainer"?"트레이너":"일반 유저"}로 설정했습니다.`);
+  loadRoles();
+};
+
+/* 초기 렌더 */
+function init(){
+  // 메인에 들어간 뒤 트레이너 카드/캘린더 표시
+  // (로그인 후 showTrainer 호출)
+}
+init();
+
 </script>
 </body>
 </html>
