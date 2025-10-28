@@ -6,55 +6,53 @@
 <title>PT 트레이너 예약 시스템</title>
 <style>
 :root {
-  --bg:#FFDEB3; /* 🔸기존 #0b0b0b → 변경 */
-  --card:#1e1e1e;
-  --accent:#f97316;
+  --bg:#FFDEB3; /* 전체 배경 */
+  --card:#FFF3E0; /* 카드 / 섹션 배경 */
+  --accent:#f97316; /* 강조색 */
   --grad:linear-gradient(135deg,#fb923c,#f97316,#ea580c);
-  --ink:#0b0b0b; /* 배경이 밝아졌으니 글씨색은 어두운 쪽으로 */
-  --muted:#334155;
-  --disabled:#94a3b8;
+  --ink:#2b1d12; /* 진한 갈색 글씨 */
+  --muted:#5c4033; /* 보조 텍스트 색 */
+  --disabled:#bfa89c; /* 비활성 */
 }
+
 body {
   margin:0;
   font-family:"Pretendard",sans-serif;
-  background:var(--bg); /* 여기도 자동 반영됨 */
+  background:var(--bg);
   color:var(--ink);
   overflow-x:hidden;
 }
 
-/* 인트로 */
+/* 인트로 영역 */
 .intro-overlay{
   position:fixed; inset:0;
   background:url('https://images.unsplash.com/photo-1558611848-73f7eb4001a1?auto=format&fit=crop&w=1400&q=80') center/cover no-repeat;
   display:flex; flex-direction:column; align-items:center; justify-content:center;
   z-index:999; text-align:center;
-  color:var(--ink); backdrop-filter:blur(6px);
-  animation:fadeIn 1s ease;
+  color:#fff;
+  backdrop-filter:blur(6px);
 }
-.intro-bg{position:absolute; inset:0; background:rgba(0,0,0,0.7);}
+.intro-bg{position:absolute; inset:0; background:rgba(0,0,0,0.5);}
 .intro-content{
   position:relative; z-index:2;
-  max-width:800px; background:rgba(0,0,0,0.6);
+  max-width:800px; background:rgba(255,243,224,0.9);
   padding:40px 30px; border-radius:20px;
-  box-shadow:0 0 25px rgba(249,115,22,0.4);
-  animation:popIn 1s ease;
+  box-shadow:0 0 20px rgba(249,115,22,0.4);
+  color:var(--ink);
 }
-@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
-@keyframes popIn{from{opacity:0; transform:scale(0.9);}to{opacity:1; transform:scale(1);}}
 .intro-content h1{
   font-size:2rem;
   background:var(--grad);
   -webkit-background-clip:text;
   -webkit-text-fill-color:transparent;
-  margin-bottom:10px;
 }
-.intro-content p{color:var(--muted);font-size:15px;margin-bottom:30px;}
+.intro-content p{color:var(--muted);}
 .intro-controls button{
   background:var(--grad);color:#fff;border:none;
   padding:10px 24px;border-radius:10px;font-weight:600;cursor:pointer;
-  box-shadow:0 0 15px rgba(249,115,22,.4);transition:.3s;
+  box-shadow:0 0 10px rgba(249,115,22,.4);transition:.3s;
 }
-.intro-controls button:hover{transform:translateY(-3px);box-shadow:0 0 20px rgba(249,115,22,.6);}
+.intro-controls button:hover{transform:translateY(-3px);box-shadow:0 0 18px rgba(249,115,22,.6);}
 
 /* 메인 */
 .main{display:none;padding:40px 20px 80px;animation:fadeInMain 1s ease;}
@@ -66,25 +64,24 @@ h2.title{
   margin-bottom:40px;
 }
 
-/* 트레이너 슬라이드 */
+/* 트레이너 카드 */
 .trainer-section{display:flex;justify-content:center;align-items:center;gap:30px;margin-bottom:40px;}
 .arrow{
   background:var(--grad);border:none;border-radius:50%;
-  width:55px;height:55px;
-  display:flex;align-items:center;justify-content:center;
-  cursor:pointer;transition:.3s;
-  box-shadow:0 0 15px rgba(249,115,22,.3);
+  width:55px;height:55px;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:.3s;box-shadow:0 0 10px rgba(249,115,22,.3);
 }
-.arrow:hover{transform:scale(1.08);box-shadow:0 0 20px rgba(249,115,22,.6);}
+.arrow:hover{transform:scale(1.08);box-shadow:0 0 18px rgba(249,115,22,.6);}
 .trainer-card{
   width:280px;border-radius:18px;background:var(--card);
-  box-shadow:0 4px 16px rgba(0,0,0,.4);
+  box-shadow:0 4px 10px rgba(0,0,0,.15);
   text-align:center;overflow:hidden;cursor:pointer;
+  transition:.3s;
 }
 .trainer-card img{width:100%;height:180px;object-fit:cover;}
 .trainer-card h3{margin:10px 0 4px;color:var(--accent);}
-.trainer-card p{margin:0;color:var(--muted);font-size:14px;}
-.trainer-card:hover{transform:translateY(-4px);box-shadow:0 0 18px rgba(249,115,22,.4);}
+.trainer-card p{margin:0;color:var(--muted);}
+.trainer-card:hover{transform:translateY(-4px);box-shadow:0 6px 20px rgba(249,115,22,.3);}
 
 /* 캘린더 */
 .schedule-section{
@@ -92,7 +89,7 @@ h2.title{
   background:var(--card);
   border-radius:20px;
   padding:30px;
-  box-shadow:0 0 25px rgba(249,115,22,.25);
+  box-shadow:0 0 20px rgba(0,0,0,.1);
 }
 .schedule-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
 .schedule-header h3{color:var(--accent);}
@@ -102,57 +99,46 @@ h2.title{
 }
 .day{
   text-align:center;padding:10px 0;border-radius:10px;
-  background:rgba(255,255,255,.06);cursor:pointer;
-  transition:.25s;font-size:14px;min-height:55px;
+  background:rgba(255,255,255,0.7);
+  cursor:pointer;transition:.25s;font-size:14px;min-height:55px;
 }
-.day:hover:not(.disabled):not(.booked){background:rgba(249,115,22,.3);transform:scale(1.05);}
+.day:hover:not(.disabled):not(.booked){
+  background:rgba(249,115,22,.3);
+  transform:scale(1.05);
+}
 .day.selected{outline:2px solid var(--accent);}
 .day.booked{background:var(--grad);color:#fff;}
-.day.disabled{color:var(--disabled);opacity:0.4;cursor:not-allowed;background:rgba(255,255,255,0.03);}
+.day.disabled{color:var(--disabled);opacity:0.5;cursor:not-allowed;background:rgba(255,255,255,0.4);}
 .day.today{outline:1px dashed var(--accent);}
 
-/* 하단 */
-.time-select-area{margin-top:15px;}
+/* 시간 선택 */
 select,button.reserve-btn{
   width:100%;padding:12px;border:none;border-radius:10px;
   margin-top:10px;font-weight:600;font-size:15px;
 }
-select{background:#f8fafc;color:#000;border:1px solid #e2e8f0;}
+select{background:#fff;color:#000;border:1px solid #ccc;}
 button.reserve-btn{
   background:var(--grad);color:#fff;transition:.3s;
-  box-shadow:0 0 15px rgba(249,115,22,.3);
+  box-shadow:0 0 12px rgba(249,115,22,.3);
 }
-button.reserve-btn:hover{transform:translateY(-3px);box-shadow:0 0 20px rgba(249,115,22,.6);}
+button.reserve-btn:hover{transform:translateY(-3px);box-shadow:0 0 18px rgba(249,115,22,.6);}
 
-/* 모달 (공통) */
-.modal{
-  display:none;position:fixed;inset:0;
-  background:rgba(0,0,0,0.7);
-  justify-content:center;align-items:center;
-  z-index:2000;
-}
+/* 모달 */
 .modal-content{
   background:var(--card);
   border-radius:18px;
   padding:24px;
-  max-width:420px;
-  text-align:center;
-  box-shadow:0 0 20px rgba(249,115,22,.4);
-  animation:popIn .5s ease;
+  color:var(--ink);
+  box-shadow:0 0 20px rgba(0,0,0,.2);
 }
-.modal-content h3{color:var(--accent);margin-bottom:10px;}
+.modal-content h3{color:var(--accent);}
 .modal-content p{color:var(--muted);}
-.modal-content img{
-  width:100%;border-radius:12px;margin-bottom:12px;
-  box-shadow:0 0 15px rgba(0,0,0,.3);
-}
 .modal-content button{
   background:var(--grad);color:#fff;border:none;
-  padding:10px 20px;border-radius:8px;
-  cursor:pointer;font-weight:600;
-  transition:.3s;margin-top:10px;
+  padding:10px 20px;border-radius:8px;cursor:pointer;font-weight:600;
+  transition:.3s;
 }
-.modal-content button:hover{transform:translateY(-2px);box-shadow:0 0 15px rgba(249,115,22,.5);}
+.modal-content button:hover{transform:translateY(-2px);box-shadow:0 0 15px rgba(249,115,22,.4);}
 </style>
 </head>
 <body>
@@ -528,4 +514,5 @@ function renderNotices() {
 </script>
 </body>
 </html>
+
 
