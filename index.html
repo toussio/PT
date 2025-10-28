@@ -9,12 +9,11 @@
   --bg:#FFDEB3;
   --card:#FFF3E0;
   --accent:#f97316;
-  --grad:linear-gradient(135deg,#fb923c,#f97316,#ea580c);
+  --grad:linear-gradient(135deg,#ffb77a,#f97316,#ea580c);
   --ink:#2b1d12;
   --muted:#5c4033;
   --disabled:#bfa89c;
 }
-
 body {
   margin:0;
   font-family:"Pretendard",sans-serif;
@@ -28,28 +27,21 @@ body {
   position:fixed; inset:0;
   background:url('https://images.unsplash.com/photo-1558611848-73f7eb4001a1?auto=format&fit=crop&w=1400&q=80') center/cover no-repeat;
   display:flex; flex-direction:column; align-items:center; justify-content:center;
-  z-index:999; text-align:center; color:#fff;
-  backdrop-filter:blur(6px);
+  z-index:999; text-align:center; color:#fff; backdrop-filter:blur(6px);
 }
-.intro-bg{position:absolute; inset:0; background:rgba(0,0,0,0.5);}
+.intro-bg{position:absolute; inset:0; background:rgba(0,0,0,0.4);}
 .intro-content{
   position:relative; z-index:2;
   max-width:800px; background:rgba(255,243,224,0.9);
   padding:40px 30px; border-radius:20px;
-  box-shadow:0 0 20px rgba(249,115,22,0.4);
-  color:var(--ink);
+  box-shadow:0 0 20px rgba(249,115,22,0.4); color:var(--ink);
 }
-.intro-content h1{
-  font-size:2rem;
-  background:var(--grad);
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-}
-.intro-content p{color:var(--muted);}
+.intro-content h1{font-size:2rem; background:var(--grad);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;}
 .intro-controls button{
-  background:var(--grad);color:#fff;border:none;
-  padding:10px 24px;border-radius:10px;font-weight:600;cursor:pointer;
-  box-shadow:0 0 10px rgba(249,115,22,.4);transition:.3s;
+  background:var(--grad); color:#fff; border:none; padding:10px 24px;
+  border-radius:12px; font-weight:600; cursor:pointer;
+  box-shadow:0 0 10px rgba(249,115,22,.4); transition:.3s;
 }
 .intro-controls button:hover{transform:translateY(-3px);box-shadow:0 0 18px rgba(249,115,22,.6);}
 
@@ -72,10 +64,9 @@ h2.title{
 }
 .arrow:hover{transform:scale(1.08);box-shadow:0 0 18px rgba(249,115,22,.6);}
 .trainer-card{
-  width:280px;border-radius:18px;background:var(--card);
-  box-shadow:0 4px 10px rgba(0,0,0,.15);
-  text-align:center;overflow:hidden;cursor:pointer;
-  transition:.3s;
+  width:280px;border-radius:20px;background:var(--card);
+  box-shadow:0 4px 10px rgba(0,0,0,.1);
+  text-align:center;overflow:hidden;cursor:pointer;transition:.3s;
 }
 .trainer-card img{width:100%;height:180px;object-fit:cover;}
 .trainer-card h3{margin:10px 0 4px;color:var(--accent);}
@@ -86,59 +77,125 @@ h2.title{
 .schedule-section{
   max-width:800px;margin:0 auto;
   background:var(--card);
-  border-radius:20px;
-  padding:30px;
-  box-shadow:0 0 20px rgba(0,0,0,.1);
+  border-radius:20px;padding:30px;
+  box-shadow:0 0 20px rgba(0,0,0,.08);
 }
 .schedule-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
-.schedule-header h3{color:var(--accent);}
-.calendar{
-  display:grid;grid-template-columns:repeat(7,1fr);
-  gap:8px;margin-top:10px;padding-bottom:16px;
-}
+.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-top:10px;padding-bottom:16px;}
 .day{
   text-align:center;padding:10px 0;border-radius:10px;
   background:rgba(255,255,255,0.7);
   cursor:pointer;transition:.25s;font-size:14px;min-height:55px;
 }
-.day:hover:not(.disabled):not(.booked){background:rgba(249,115,22,.3);transform:scale(1.05);}
+.day:hover:not(.disabled):not(.booked){background:rgba(249,115,22,.25);transform:scale(1.05);}
 .day.selected{outline:2px solid var(--accent);}
 .day.booked{background:var(--grad);color:#fff;}
 .day.disabled{color:var(--disabled);opacity:0.5;cursor:not-allowed;background:rgba(255,255,255,0.4);}
 .day.today{outline:1px dashed var(--accent);}
-.calendar > div:not(.day){visibility:hidden;height:0;}
 
-/* 시간 선택 */
-select,button.reserve-btn{
-  width:100%;padding:12px;border:none;border-radius:10px;
-  margin-top:10px;font-weight:600;font-size:15px;
+/* 시간 선택 및 예약 버튼 */
+.time-select-area {
+  margin-top: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  animation: fadePop .6s ease;
 }
-select{background:#fff;color:#000;border:1px solid #ccc;}
-button.reserve-btn{
-  background:var(--grad);color:#fff;transition:.3s;
-  box-shadow:0 0 12px rgba(249,115,22,.3);
+@keyframes fadePop {
+  from {opacity: 0; transform: scale(0.9);}
+  to {opacity: 1; transform: scale(1);}
 }
-button.reserve-btn:hover{transform:translateY(-3px);box-shadow:0 0 18px rgba(249,115,22,.6);}
 
-/* ✅ 모달 공통 수정 */
-.modal {
-  display:none;
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.6);
-  justify-content:center;
-  align-items:center;
-  z-index:2000;
-  overflow:hidden;
+/* select */
+.time-select-area select {
+  width: 80%;
+  background: #fffaf3;
+  border: 2px solid #ffd6a5;
+  border-radius: 16px;
+  padding: 14px 16px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+  transition: all .25s ease;
 }
-.modal-content {
-  background:var(--card);
-  border-radius:18px;
-  padding:24px;
-  color:var(--ink);
-  box-shadow:0 0 20px rgba(0,0,0,.2);
-  max-height:90vh;
-  overflow-y:auto;
+.time-select-area select:hover {
+  border-color: #fca65a;
+  background: #fff3e0;
+  box-shadow: 0 4px 12px rgba(249,115,22,0.15);
+}
+.time-select-area select:focus {
+  outline: none;
+  border-color: #f97316;
+  box-shadow: 0 0 10px rgba(249,115,22,0.3);
+}
+.time-select-area option[disabled] {
+  color: var(--disabled);
+}
+
+/* 예약 버튼 */
+button.reserve-btn {
+  width: 80%;
+  background: var(--grad);
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  padding: 16px 20px;
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 5px 15px rgba(249, 115, 22, 0.3);
+  transition: all .25s ease;
+  position: relative;
+  overflow: hidden;
+}
+button.reserve-btn:disabled {
+  background: #e5c7a3;
+  cursor: not-allowed;
+  box-shadow: none;
+  color: #fffaf3;
+}
+button.reserve-btn::before {
+  content: "";
+  position: absolute;
+  top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: linear-gradient(120deg, rgba(255,255,255,0.6), rgba(255,255,255,0));
+  transition: 0.5s;
+}
+button.reserve-btn:hover:not(:disabled) {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(249,115,22,0.4);
+}
+button.reserve-btn:hover::before {
+  left: 100%;
+}
+button.reserve-btn:active:not(:disabled) {
+  transform: scale(0.96);
+  box-shadow: 0 3px 8px rgba(249,115,22,0.3);
+}
+
+/* 토스트 */
+.toast {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fff8ee;
+  color: var(--ink);
+  border: 2px solid #ffd6a5;
+  border-radius: 14px;
+  padding: 12px 24px;
+  font-weight: 600;
+  font-size: 15px;
+  box-shadow: 0 4px 15px rgba(249,115,22,0.2);
+  animation: fadeInOut 3s ease forwards;
+}
+@keyframes fadeInOut {
+  0% {opacity:0; transform:translate(-50%,20px);}
+  10%,90% {opacity:1; transform:translate(-50%,0);}
+  100% {opacity:0; transform:translate(-50%,20px);}
 }
 </style>
 </head>
@@ -148,7 +205,7 @@ button.reserve-btn:hover{transform:translateY(-3px);box-shadow:0 0 18px rgba(249
 <div class="intro-overlay" id="intro">
   <div class="intro-bg"></div>
   <div class="intro-content">
-    <h1>🏋️‍♀️ FIT블리 예약 포털</h1>
+    <h1>🏋️‍♀️ 작두 PT 센터</h1>
     <p>당신의 몸을 디자인하는 곳 — 최고의 트레이너들과 함께하세요.</p>
     <div class="intro-controls"><button id="startBtn">시작하기</button></div>
   </div>
@@ -172,123 +229,112 @@ button.reserve-btn:hover{transform:translateY(-3px);box-shadow:0 0 18px rgba(249
     <div class="time-select-area">
       <select id="timeSelect">
         <option value="">시간 선택</option>
-        <option>10:00</option><option>12:00</option>
-        <option>14:00</option><option>16:00</option><option>18:00</option>
       </select>
-      <button class="reserve-btn" id="reserveBtn">예약하기</button>
+      <button class="reserve-btn" id="reserveBtn" disabled>예약하기</button>
     </div>
-  </div>
-</div>
-
-<!-- 일정 모달 -->
-<div class="modal" id="scheduleModal">
-  <div class="modal-content">
-    <h3 id="scheduleTitle"></h3>
-    <p id="scheduleDate"></p>
-    <ul id="scheduleList" style="list-style:none;margin:0;padding:0;"></ul>
-    <button>닫기</button>
-  </div>
-</div>
-
-<!-- 트레이너 정보 모달 -->
-<div class="modal" id="trainerModal">
-  <div class="modal-content">
-    <img id="modalImg">
-    <h3 id="modalName"></h3>
-    <p id="modalCode"></p>
-    <p id="modalIntro"></p>
-    <p id="modalDesc"></p>
-    <button>닫기</button>
-  </div>
-</div>
-
-<!-- 공지사항 -->
-<button class="notice-btn" id="openNotice">📢 공지사항</button>
-<div class="modal" id="noticeModal">
-  <div class="modal-content">
-    <h3>📢 공지사항</h3>
-    <div class="notice-list" id="noticeList"></div>
-    <div class="add-area">
-      <input type="text" id="noticeTitle" placeholder="공지 제목">
-      <textarea id="noticeText" placeholder="공지 내용을 입력하세요"></textarea>
-      <button id="addNotice">공지 추가</button>
-    </div>
-    <button>닫기</button>
-  </div>
-</div>
-
-<div class="modal" id="noticeDetailModal">
-  <div class="modal-content">
-    <h3 id="detailTitle"></h3>
-    <p id="detailText"></p>
-    <small id="detailDate"></small>
-    <button>닫기</button>
   </div>
 </div>
 
 <script>
-/* 인트로 */
 const intro=document.getElementById("intro");
 const main=document.getElementById("main");
-document.getElementById("startBtn").onclick=()=>{
-  intro.style.opacity="0";
-  setTimeout(()=>{intro.style.display="none";main.style.display="block";},600);
-};
+document.getElementById("startBtn").onclick=()=>{intro.style.opacity="0";setTimeout(()=>{intro.style.display="none";main.style.display="block";},600);};
 
-/* 트레이너 데이터 */
 const trainers=[
-  {name:"트레이너 A",photo:"https://via.placeholder.com/260x180?text=A",intro:"체형 교정 전문가",code:"PT-001",desc:"10년 경력의 전문 체형 교정 코치."},
-  {name:"트레이너 B",photo:"https://via.placeholder.com/260x180?text=B",intro:"다이어트 코치",code:"PT-002",desc:"식단 및 생활습관 교정까지 함께합니다."},
-  {name:"트레이너 C",photo:"https://via.placeholder.com/260x180?text=C",intro:"근력 향상 전문가",code:"PT-003",desc:"기초 체력부터 고급 트레이닝까지 지도."},
-  {name:"트레이너 D",photo:"https://via.placeholder.com/260x180?text=D",intro:"재활 트레이너",code:"PT-004",desc:"부상 후 회복 프로그램 전문."}
+  {name:"트레이너 A",photo:"https://via.placeholder.com/260x180?text=A",intro:"체형 교정 전문가"},
+  {name:"트레이너 B",photo:"https://via.placeholder.com/260x180?text=B",intro:"다이어트 코치"},
+  {name:"트레이너 C",photo:"https://via.placeholder.com/260x180?text=C",intro:"근력 향상 전문가"},
+  {name:"트레이너 D",photo:"https://via.placeholder.com/260x180?text=D",intro:"재활 트레이너"}
 ];
-
 let currentTrainer=0;
 const trainerCard=document.getElementById("trainerCard");
 const trainerTitle=document.getElementById("trainerTitle");
-function showTrainer(i){
-  const t=trainers[i];
-  trainerCard.innerHTML=`<img src="${t.photo}"><h3>${t.name}</h3><p>${t.intro}</p>`;
-  trainerTitle.textContent=`${t.name} 일정`;
-}
-showTrainer(currentTrainer);
+function showTrainer(i){const t=trainers[i];trainerCard.innerHTML=`<img src="${t.photo}"><h3>${t.name}</h3><p>${t.intro}</p>`;trainerTitle.textContent=`${t.name} 일정`;}
+document.getElementById("prevBtn").onclick=()=>{currentTrainer=(currentTrainer-1+trainers.length)%trainers.length;showTrainer(currentTrainer);renderCalendar();};
+document.getElementById("nextBtn").onclick=()=>{currentTrainer=(currentTrainer+1)%trainers.length;showTrainer(currentTrainer);renderCalendar();};
 
-/* 예약 데이터 */
-const bookings=[
-  {trainer:"트레이너 A",user:"홍길동",date:"2025-10-15",time:"14:00"}
-];
-
+const bookings=[{trainer:"트레이너 A",user:"홍길동",date:"2025-10-15",time:"14:00"}];
 const calendar=document.getElementById("calendar");
+let selectedDate=null;
+const timeSelect=document.getElementById("timeSelect");
+const reserveBtn=document.getElementById("reserveBtn");
+const baseTimes=["10:00","12:00","14:00","16:00","18:00"];
+
 function renderCalendar(){
   calendar.innerHTML="";
   const now=new Date();
-  const y=now.getFullYear(), m=now.getMonth();
-  const fd=new Date(y,m,1), ld=new Date(y,m+1,0);
+  const todayZero=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  const y=now.getFullYear(),m=now.getMonth();
+  const fd=new Date(y,m,1),ld=new Date(y,m+1,0);
   document.getElementById("monthLabel").textContent=`${y}년 ${m+1}월`;
   for(let i=0;i<fd.getDay();i++)calendar.appendChild(document.createElement("div"));
   for(let d=1;d<=ld.getDate();d++){
     const dateObj=new Date(y,m,d);
-    const dateStr=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dateStr=`${y}-${m+1}-${d}`;
     const day=document.createElement("div");
     day.className="day";
     day.textContent=d;
-    if(bookings.some(b=>b.trainer===trainers[currentTrainer].name && b.date===dateStr))
-      day.classList.add("booked");
-    day.onclick=()=>alert(`${dateStr} 클릭됨`);
+    const isPast=dateObj<todayZero;
+    const hasBooking=bookings.some(b=>b.trainer===trainers[currentTrainer].name && b.date===dateStr);
+    const isToday=dateObj.toDateString()===now.toDateString();
+    if(isPast) day.classList.add("disabled");
+    if(hasBooking) day.classList.add("booked");
+    if(isToday) day.classList.add("today");
+    day.onclick=()=>{
+      if(isPast) return showToast("이전 날짜는 예약할 수 없습니다.");
+      document.querySelectorAll(".day").forEach(c=>c.classList.remove("selected"));
+      day.classList.add("selected");
+      selectedDate=dateStr;
+      updateTimeOptions();
+    };
     calendar.appendChild(day);
   }
 }
-renderCalendar();
 
-/* ✅ 모든 모달 닫기 */
-function closeAllModals(){
-  document.querySelectorAll('.modal').forEach(m=>m.style.display='none');
-}
-document.addEventListener('DOMContentLoaded',()=>{
-  document.querySelectorAll('.modal button').forEach(btn=>{
-    btn.addEventListener('click',closeAllModals);
+function updateTimeOptions(){
+  timeSelect.innerHTML='<option value="">시간 선택</option>';
+  const t=trainers[currentTrainer];
+  const bookedTimes=bookings
+    .filter(b=>b.trainer===t.name && b.date===selectedDate)
+    .map(b=>b.time);
+  let available=false;
+  baseTimes.forEach(time=>{
+    const opt=document.createElement("option");
+    opt.textContent=time;
+    opt.value=time;
+    if(bookedTimes.includes(time)){
+      opt.disabled=true;
+      opt.textContent=`${time} (예약됨)`;
+    } else available=true;
+    timeSelect.appendChild(opt);
   });
-});
+  reserveBtn.disabled=!available;
+}
+
+function showToast(msg){
+  const toast=document.createElement("div");
+  toast.className="toast";
+  toast.textContent=msg;
+  document.body.appendChild(toast);
+  setTimeout(()=>toast.remove(),3000);
+}
+
+reserveBtn.onclick=()=>{
+  const t=trainers[currentTrainer];
+  if(!selectedDate)return showToast("날짜를 선택하세요!");
+  const time=timeSelect.value;
+  if(!time)return showToast("시간을 선택하세요!");
+  if(bookings.find(b=>b.trainer===t.name&&b.date===selectedDate&&b.time===time))return showToast("이미 예약된 시간입니다!");
+  const user=prompt("예약자 이름을 입력하세요:");
+  if(!user)return;
+  bookings.push({trainer:t.name,user,date:selectedDate,time});
+  showToast(`${t.name}님과 ${selectedDate} ${time} 예약 완료!`);
+  renderCalendar();
+  updateTimeOptions();
+};
+
+showTrainer(currentTrainer);
+renderCalendar();
 </script>
 </body>
 </html>
