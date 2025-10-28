@@ -651,32 +651,26 @@ function buildTrainerDayGrid(){
     <button id="applyTimesTrainer" class="tab-btn">적용</button>
   `;
 
-  // 트레이너 목록 채우기 (관리자면 전체, 트레이너면 본인만)
+  // ✅ 트레이너 전체 목록 보여주기
   const trainerSelect = area.querySelector("#trainerSelect");
-  if(currentRoleForPanel === "admin"){
-    trainers.forEach(t=>{
-      const opt=document.createElement("option");
-      opt.value=t.name; opt.textContent=t.name;
-      trainerSelect.appendChild(opt);
-    });
-  }else if(currentUser){
+  trainers.forEach(t=>{
     const opt=document.createElement("option");
-    opt.value=currentUser.nick;
-    opt.textContent=currentUser.nick;
+    opt.value=t.name; 
+    opt.textContent=t.name;
     trainerSelect.appendChild(opt);
-    trainerSelect.disabled=true;
-  }
+  });
 
   const daySelect = area.querySelector("#daySelect");
   const timeGrid = area.querySelector("#timeGrid");
 
+  // 요일 선택 시 시간 표시
   daySelect.onchange = async ()=>{
     const tName = trainerSelect.value;
     const dName = daySelect.value;
     timeGrid.innerHTML = "";
     if(!tName || !dName) return;
 
-    // 시간 체크박스 생성
+    // 시간 리스트 출력
     allTimes.forEach(tm=>{
       const chip=document.createElement("label");
       chip.className="time-chip";
@@ -684,7 +678,7 @@ function buildTrainerDayGrid(){
       timeGrid.appendChild(chip);
     });
 
-    // 기존 데이터 불러오기
+    // 기존 설정 불러오기
     const snap = await getDoc(doc(db,"trainerSchedule", tName));
     if(snap.exists()){
       const data = snap.data();
@@ -695,6 +689,7 @@ function buildTrainerDayGrid(){
     }
   };
 
+  // “적용” 클릭 시 Firestore에 저장
   area.querySelector("#applyTimesTrainer").onclick = async ()=>{
     const tName = trainerSelect.value;
     const dName = daySelect.value;
@@ -709,7 +704,6 @@ function buildTrainerDayGrid(){
     showToast(`✅ ${tName}의 ${dName} 요일 시간 저장 완료`);
   };
 }
-
 /* =======================
       공지(관리자)
 ======================= */
@@ -784,6 +778,7 @@ init();
 </script>
 </body>
 </html>
+
 
 
 
