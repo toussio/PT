@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PT 트레이너 예약 시스템</title>
 <style>
@@ -9,11 +9,12 @@
   --bg:#FFDEB3;
   --card:#FFF3E0;
   --accent:#f97316;
-  --grad:linear-gradient(135deg,#ffb77a,#f97316,#ea580c);
+  --grad:linear-gradient(135deg,#fb923c,#f97316,#ea580c);
   --ink:#2b1d12;
   --muted:#5c4033;
   --disabled:#bfa89c;
 }
+
 body {
   margin:0;
   font-family:"Pretendard",sans-serif;
@@ -23,221 +24,143 @@ body {
 }
 
 /* 인트로 */
-.intro-overlay {
-  position: fixed; inset: 0;
-  background: url('https://images.unsplash.com/photo-1558611848-73f7eb4001a1?auto=format&fit=crop&w=1400&q=80') center/cover no-repeat;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  z-index:999;text-align:center;color:#fff;backdrop-filter:blur(6px);
+.intro-overlay{
+  position:fixed; inset:0;
+  background:url('https://images.unsplash.com/photo-1558611848-73f7eb4001a1?auto=format&fit=crop&w=1400&q=80') center/cover no-repeat;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  z-index:999; text-align:center; color:#fff;
+  backdrop-filter:blur(6px);
 }
-.intro-bg{position:absolute;inset:0;background:rgba(0,0,0,0.4);}
-.intro-content {
-  position:relative;z-index:2;max-width:800px;background:rgba(255,243,224,0.9);
-  padding:40px 30px;border-radius:20px;box-shadow:0 0 20px rgba(249,115,22,0.4);
+.intro-bg{position:absolute; inset:0; background:rgba(0,0,0,0.5);}
+.intro-content{
+  position:relative; z-index:2;
+  max-width:800px; background:rgba(255,243,224,0.9);
+  padding:40px 30px; border-radius:20px;
+  box-shadow:0 0 20px rgba(249,115,22,0.4);
   color:var(--ink);
 }
-.intro-content h1 {
-  font-size:2rem;background:var(--grad);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+.intro-content h1{
+  font-size:2rem;
+  background:var(--grad);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
 }
-.intro-controls button {
-  background:var(--grad);color:#fff;border:none;padding:10px 24px;
-  border-radius:12px;font-weight:600;cursor:pointer;
+.intro-content p{color:var(--muted);}
+.intro-controls button{
+  background:var(--grad);color:#fff;border:none;
+  padding:10px 24px;border-radius:10px;font-weight:600;cursor:pointer;
   box-shadow:0 0 10px rgba(249,115,22,.4);transition:.3s;
 }
-.intro-controls button:hover {
-  transform:translateY(-3px);
-  box-shadow:0 0 18px rgba(249,115,22,.6);
-}
+.intro-controls button:hover{transform:translateY(-3px);box-shadow:0 0 18px rgba(249,115,22,.6);}
 
 /* 메인 */
-.main { display:none;padding:40px 20px 80px;animation:fadeInMain 1s ease; }
-@keyframes fadeInMain { from{opacity:0;}to{opacity:1;} }
-
-h2.title {
+.main{display:none;padding:40px 20px 80px;animation:fadeInMain 1s ease;}
+@keyframes fadeInMain{from{opacity:0;}to{opacity:1;}}
+h2.title{
   text-align:center;font-size:1.8rem;
   background:var(--grad);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;
   margin-bottom:40px;
 }
 
-/* 트레이너 섹션 */
-.trainer-section {
-  position: relative;
-  height: 330px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 80px;
-  overflow: hidden;
+/* 트레이너 카드 */
+.trainer-section{display:flex;justify-content:center;align-items:center;gap:30px;margin-bottom:40px;}
+.arrow{
+  background:var(--grad);border:none;border-radius:50%;
+  width:55px;height:55px;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:.3s;box-shadow:0 0 10px rgba(249,115,22,.3);
 }
-.trainer-card {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 260px;
-  border-radius: 20px;
-  background: var(--card);
-  box-shadow: 0 4px 12px rgba(0,0,0,.15);
-  text-align: center;
-  overflow: hidden;
-  transform: translate(-50%, -50%);
-  transition: transform .7s cubic-bezier(0.25, 1, 0.5, 1), opacity .6s ease;
+.arrow:hover{transform:scale(1.08);box-shadow:0 0 18px rgba(249,115,22,.6);}
+.trainer-card{
+  width:280px;border-radius:18px;background:var(--card);
+  box-shadow:0 4px 10px rgba(0,0,0,.15);
+  text-align:center;overflow:hidden;cursor:pointer;
+  transition:.3s;
 }
-.trainer-card img { width: 100%; height: 160px; object-fit: cover; }
-.trainer-card h3 { margin: 10px 0 4px; color: var(--accent); }
-.trainer-card p { margin: 0; color: var(--muted); }
-
-/* 버튼 */
-.trainer-nav {
-  position: absolute;
-  bottom: -60px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  justify-content: center;
-  gap: 22px;
-}
-.nav-btn {
-  width: 55px;
-  height: 55px;
-  border: none;
-  border-radius: 50%;
-  background: var(--grad);
-  color: #fff;
-  font-size: 22px;
-  font-weight: 700;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(249,115,22,.3);
-  transition: all .3s ease;
-}
-.nav-btn:hover { transform: translateY(-3px); box-shadow:0 6px 20px rgba(249,115,22,.5); }
-.nav-btn:active { transform: scale(0.9); }
+.trainer-card img{width:100%;height:180px;object-fit:cover;}
+.trainer-card h3{margin:10px 0 4px;color:var(--accent);}
+.trainer-card p{margin:0;color:var(--muted);}
+.trainer-card:hover{transform:translateY(-4px);box-shadow:0 6px 20px rgba(249,115,22,.3);}
 
 /* 캘린더 */
-.schedule-section {
+.schedule-section{
   max-width:800px;margin:0 auto;
   background:var(--card);
-  border-radius:20px;padding:30px;
-  box-shadow:0 0 20px rgba(0,0,0,.08);
+  border-radius:20px;
+  padding:30px;
+  box-shadow:0 0 20px rgba(0,0,0,.1);
 }
 .schedule-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
-.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-top:10px;padding-bottom:16px;}
+.schedule-header h3{color:var(--accent);}
+.calendar{
+  display:grid;grid-template-columns:repeat(7,1fr);
+  gap:8px;margin-top:10px;padding-bottom:16px;
+}
 .day{
   text-align:center;padding:10px 0;border-radius:10px;
   background:rgba(255,255,255,0.7);
   cursor:pointer;transition:.25s;font-size:14px;min-height:55px;
 }
-.day:hover:not(.disabled):not(.booked){background:rgba(249,115,22,.25);transform:scale(1.05);}
+.day:hover:not(.disabled):not(.booked){background:rgba(249,115,22,.3);transform:scale(1.05);}
 .day.selected{outline:2px solid var(--accent);}
 .day.booked{background:var(--grad);color:#fff;}
 .day.disabled{color:var(--disabled);opacity:0.5;cursor:not-allowed;background:rgba(255,255,255,0.4);}
 .day.today{outline:1px dashed var(--accent);}
+.calendar > div:not(.day){visibility:hidden;height:0;}
 
-/* 시간 선택 및 예약 버튼 */
-.time-select-area {
-  margin-top: 30px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 14px;
-  animation: fadePop .6s ease;
+/* 시간 선택 */
+select,button.reserve-btn{
+  width:100%;padding:12px;border:none;border-radius:10px;
+  margin-top:10px;font-weight:600;font-size:15px;
 }
-@keyframes fadePop { from {opacity: 0; transform: scale(0.9);} to {opacity: 1; transform: scale(1);} }
+select{background:#fff;color:#000;border:1px solid #ccc;}
+button.reserve-btn{
+  background:var(--grad);color:#fff;transition:.3s;
+  box-shadow:0 0 12px rgba(249,115,22,.3);
+}
+button.reserve-btn:hover{transform:translateY(-3px);box-shadow:0 0 18px rgba(249,115,22,.6);}
 
-/* select */
-.time-select-area select {
-  width: 80%;
-  background: #fffaf3;
-  border: 2px solid #ffd6a5;
-  border-radius: 16px;
-  padding: 14px 16px;
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--ink);
-  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-  transition: all .25s ease;
+/* ✅ 모달 공통 수정 */
+.modal {
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.6);
+  justify-content:center;
+  align-items:center;
+  z-index:2000;
+  overflow:hidden;
 }
-.time-select-area select:hover {
-  border-color: #fca65a;
-  background: #fff3e0;
-  box-shadow: 0 4px 12px rgba(249,115,22,0.15);
-}
-.time-select-area select:focus {
-  outline: none;
-  border-color: #f97316;
-  box-shadow: 0 0 10px rgba(249,115,22,0.3);
-}
-.time-select-area option[disabled] { color: var(--disabled); }
-
-/* 예약 버튼 */
-button.reserve-btn {
-  width: 80%;
-  background: var(--grad);
-  color: #fff;
-  border: none;
-  border-radius: 20px;
-  padding: 16px 20px;
-  font-size: 17px;
-  font-weight: 700;
-  cursor: pointer;
-  box-shadow: 0 5px 15px rgba(249, 115, 22, 0.3);
-  transition: all .25s ease;
-}
-button.reserve-btn:disabled {
-  background: #e5c7a3;
-  cursor: not-allowed;
-  box-shadow: none;
-  color: #fffaf3;
-}
-button.reserve-btn:hover:not(:disabled) {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 20px rgba(249,115,22,0.4);
-}
-
-/* 토스트 */
-.toast {
-  position: fixed;
-  bottom: 28px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #fff8ee;
-  color: var(--ink);
-  border: 2px solid #ffd6a5;
-  border-radius: 14px;
-  padding: 12px 24px;
-  font-weight: 600;
-  font-size: 15px;
-  box-shadow: 0 4px 15px rgba(249,115,22,0.2);
-  animation: fadeInOut 3s ease forwards;
-}
-@keyframes fadeInOut {
-  0% {opacity:0; transform:translate(-50%,20px);}
-  10%,90% {opacity:1; transform:translate(-50%,0);}
-  100% {opacity:0; transform:translate(-50%,20px);}
+.modal-content {
+  background:var(--card);
+  border-radius:18px;
+  padding:24px;
+  color:var(--ink);
+  box-shadow:0 0 20px rgba(0,0,0,.2);
+  max-height:90vh;
+  overflow-y:auto;
 }
 </style>
 </head>
 <body>
 
+<!-- 인트로 -->
 <div class="intro-overlay" id="intro">
   <div class="intro-bg"></div>
   <div class="intro-content">
-    <h1>🏋️‍♀️ 작두 PT 센터</h1>
+    <h1>🏋️‍♀️ FIT블리 예약 포털</h1>
     <p>당신의 몸을 디자인하는 곳 — 최고의 트레이너들과 함께하세요.</p>
     <div class="intro-controls"><button id="startBtn">시작하기</button></div>
   </div>
 </div>
 
+<!-- 메인 -->
 <div class="main" id="main">
   <h2 class="title">트레이너 예약 시스템</h2>
   <div class="trainer-section">
-    <div class="trainer-card" id="leftCard"></div>
-    <div class="trainer-card" id="centerCard"></div>
-    <div class="trainer-card" id="rightCard"></div>
-    <div class="trainer-nav">
-      <button id="prevTrainer" class="nav-btn">◀</button>
-      <button id="nextTrainer" class="nav-btn">▶</button>
-    </div>
+    <button class="arrow" id="prevBtn">◀</button>
+    <div class="trainer-card" id="trainerCard"></div>
+    <button class="arrow" id="nextBtn">▶</button>
   </div>
 
   <div class="schedule-section">
@@ -247,9 +170,59 @@ button.reserve-btn:hover:not(:disabled) {
     </div>
     <div class="calendar" id="calendar"></div>
     <div class="time-select-area">
-      <select id="timeSelect"><option value="">시간 선택</option></select>
-      <button class="reserve-btn" id="reserveBtn" disabled>예약하기</button>
+      <select id="timeSelect">
+        <option value="">시간 선택</option>
+        <option>10:00</option><option>12:00</option>
+        <option>14:00</option><option>16:00</option><option>18:00</option>
+      </select>
+      <button class="reserve-btn" id="reserveBtn">예약하기</button>
     </div>
+  </div>
+</div>
+
+<!-- 일정 모달 -->
+<div class="modal" id="scheduleModal">
+  <div class="modal-content">
+    <h3 id="scheduleTitle"></h3>
+    <p id="scheduleDate"></p>
+    <ul id="scheduleList" style="list-style:none;margin:0;padding:0;"></ul>
+    <button>닫기</button>
+  </div>
+</div>
+
+<!-- 트레이너 정보 모달 -->
+<div class="modal" id="trainerModal">
+  <div class="modal-content">
+    <img id="modalImg">
+    <h3 id="modalName"></h3>
+    <p id="modalCode"></p>
+    <p id="modalIntro"></p>
+    <p id="modalDesc"></p>
+    <button>닫기</button>
+  </div>
+</div>
+
+<!-- 공지사항 -->
+<button class="notice-btn" id="openNotice">📢 공지사항</button>
+<div class="modal" id="noticeModal">
+  <div class="modal-content">
+    <h3>📢 공지사항</h3>
+    <div class="notice-list" id="noticeList"></div>
+    <div class="add-area">
+      <input type="text" id="noticeTitle" placeholder="공지 제목">
+      <textarea id="noticeText" placeholder="공지 내용을 입력하세요"></textarea>
+      <button id="addNotice">공지 추가</button>
+    </div>
+    <button>닫기</button>
+  </div>
+</div>
+
+<div class="modal" id="noticeDetailModal">
+  <div class="modal-content">
+    <h3 id="detailTitle"></h3>
+    <p id="detailText"></p>
+    <small id="detailDate"></small>
+    <button>닫기</button>
   </div>
 </div>
 
@@ -262,176 +235,60 @@ document.getElementById("startBtn").onclick=()=>{
   setTimeout(()=>{intro.style.display="none";main.style.display="block";},600);
 };
 
-/* 트레이너 목록 */
+/* 트레이너 데이터 */
 const trainers=[
-  {name:"트레이너 A",photo:"https://via.placeholder.com/260x180?text=A",intro:"체형 교정 전문가"},
-  {name:"트레이너 B",photo:"https://via.placeholder.com/260x180?text=B",intro:"다이어트 코치"},
-  {name:"트레이너 C",photo:"https://via.placeholder.com/260x180?text=C",intro:"근력 향상 전문가"},
-  {name:"트레이너 D",photo:"https://via.placeholder.com/260x180?text=D",intro:"재활 트레이너"}
+  {name:"트레이너 A",photo:"https://via.placeholder.com/260x180?text=A",intro:"체형 교정 전문가",code:"PT-001",desc:"10년 경력의 전문 체형 교정 코치."},
+  {name:"트레이너 B",photo:"https://via.placeholder.com/260x180?text=B",intro:"다이어트 코치",code:"PT-002",desc:"식단 및 생활습관 교정까지 함께합니다."},
+  {name:"트레이너 C",photo:"https://via.placeholder.com/260x180?text=C",intro:"근력 향상 전문가",code:"PT-003",desc:"기초 체력부터 고급 트레이닝까지 지도."},
+  {name:"트레이너 D",photo:"https://via.placeholder.com/260x180?text=D",intro:"재활 트레이너",code:"PT-004",desc:"부상 후 회복 프로그램 전문."}
 ];
+
 let currentTrainer=0;
-const leftCard=document.getElementById("leftCard");
-const centerCard=document.getElementById("centerCard");
-const rightCard=document.getElementById("rightCard");
+const trainerCard=document.getElementById("trainerCard");
 const trainerTitle=document.getElementById("trainerTitle");
-
-/* 카드 내용 */
-function setTrainerContent(card,index){
-  const t=trainers[(index+trainers.length)%trainers.length];
-  card.innerHTML=`<img src="${t.photo}"><h3>${t.name}</h3><p>${t.intro}</p>`;
+function showTrainer(i){
+  const t=trainers[i];
+  trainerCard.innerHTML=`<img src="${t.photo}"><h3>${t.name}</h3><p>${t.intro}</p>`;
+  trainerTitle.textContent=`${t.name} 일정`;
 }
+showTrainer(currentTrainer);
 
-/* 카드 업데이트 */
-function updateTrainerCards(){
-  setTrainerContent(leftCard,currentTrainer-1);
-  setTrainerContent(centerCard,currentTrainer);
-  setTrainerContent(rightCard,currentTrainer+1);
-  trainerTitle.textContent=`${trainers[currentTrainer].name} 일정`;
-}
+/* 예약 데이터 */
+const bookings=[
+  {trainer:"트레이너 A",user:"홍길동",date:"2025-10-15",time:"14:00"}
+];
 
-/* 초기 위치 */
-function resetPositions(){
-  leftCard.style.transform="translate(-220%, -50%) scale(0.85)";
-  centerCard.style.transform="translate(-50%, -50%) scale(1)";
-  rightCard.style.transform="translate(120%, -50%) scale(0.85)";
-  leftCard.style.opacity=0.5;
-  rightCard.style.opacity=0.5;
-}
-
-/* 전환 애니메이션 */
-function animateSlide(dir){
-  [leftCard,centerCard,rightCard].forEach(c=>{
-    c.style.transition="transform .7s cubic-bezier(0.25,1,0.5,1),opacity .5s ease";
-  });
-
-  if(dir==="left"){
-    centerCard.style.transform="translate(-220%, -50%) scale(0.9)";
-    centerCard.style.opacity="0";
-    rightCard.style.transform="translate(-50%, -50%) scale(1)";
-    rightCard.style.opacity="1";
-  }else{
-    centerCard.style.transform="translate(120%, -50%) scale(0.9)";
-    centerCard.style.opacity="0";
-    leftCard.style.transform="translate(-50%, -50%) scale(1)";
-    leftCard.style.opacity="1";
-  }
-
-  setTimeout(()=>{
-    if(dir==="left") currentTrainer=(currentTrainer+1)%trainers.length;
-    else currentTrainer=(currentTrainer-1+trainers.length)%trainers.length;
-    updateTrainerCards();
-    resetPositions();
-    renderCalendar();
-  },700);
-}
-
-/* 버튼 이벤트 */
-document.getElementById("nextTrainer").onclick=()=>animateSlide("left");
-document.getElementById("prevTrainer").onclick=()=>animateSlide("right");
-
-/* 스와이프 */
-let startX=0,isDragging=false;
-centerCard.addEventListener("mousedown",e=>{isDragging=true;startX=e.clientX;});
-window.addEventListener("mouseup",e=>{
-  if(!isDragging)return;
-  const diff=e.clientX-startX;
-  if(diff>100)animateSlide("right");
-  else if(diff<-100)animateSlide("left");
-  isDragging=false;
-});
-centerCard.addEventListener("touchstart",e=>{isDragging=true;startX=e.touches[0].clientX;});
-centerCard.addEventListener("touchend",e=>{
-  const diff=e.changedTouches[0].clientX-startX;
-  if(diff>100)animateSlide("right");
-  else if(diff<-100)animateSlide("left");
-  isDragging=false;
-});
-
-updateTrainerCards();
-resetPositions();
-
-/* 예약 시스템 */
-const bookings=[{trainer:"트레이너 A",user:"홍길동",date:"2025-10-15",time:"14:00"}];
 const calendar=document.getElementById("calendar");
-let selectedDate=null;
-const timeSelect=document.getElementById("timeSelect");
-const reserveBtn=document.getElementById("reserveBtn");
-const baseTimes=["10:00","12:00","14:00","16:00","18:00"];
-
 function renderCalendar(){
   calendar.innerHTML="";
   const now=new Date();
-  const todayZero=new Date(now.getFullYear(),now.getMonth(),now.getDate());
-  const y=now.getFullYear(),m=now.getMonth();
-  const fd=new Date(y,m,1),ld=new Date(y,m+1,0);
+  const y=now.getFullYear(), m=now.getMonth();
+  const fd=new Date(y,m,1), ld=new Date(y,m+1,0);
   document.getElementById("monthLabel").textContent=`${y}년 ${m+1}월`;
   for(let i=0;i<fd.getDay();i++)calendar.appendChild(document.createElement("div"));
   for(let d=1;d<=ld.getDate();d++){
     const dateObj=new Date(y,m,d);
-    const dateStr=`${y}-${m+1}-${d}`;
+    const dateStr=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const day=document.createElement("div");
     day.className="day";
     day.textContent=d;
-    const isPast=dateObj<todayZero;
-    const hasBooking=bookings.some(b=>b.trainer===trainers[currentTrainer].name && b.date===dateStr);
-    const isToday=dateObj.toDateString()===now.toDateString();
-    if(isPast) day.classList.add("disabled");
-    if(hasBooking) day.classList.add("booked");
-    if(isToday) day.classList.add("today");
-    day.onclick=()=>{
-      if(isPast)return showToast("이전 날짜는 예약할 수 없습니다.");
-      document.querySelectorAll(".day").forEach(c=>c.classList.remove("selected"));
-      day.classList.add("selected");
-      selectedDate=dateStr;
-      updateTimeOptions();
-    };
+    if(bookings.some(b=>b.trainer===trainers[currentTrainer].name && b.date===dateStr))
+      day.classList.add("booked");
+    day.onclick=()=>alert(`${dateStr} 클릭됨`);
     calendar.appendChild(day);
   }
 }
-
-function updateTimeOptions(){
-  timeSelect.innerHTML='<option value="">시간 선택</option>';
-  const t=trainers[currentTrainer];
-  const bookedTimes=bookings.filter(b=>b.trainer===t.name&&b.date===selectedDate).map(b=>b.time);
-  let available=false;
-  baseTimes.forEach(time=>{
-    const opt=document.createElement("option");
-    opt.textContent=time;
-    opt.value=time;
-    if(bookedTimes.includes(time)){
-      opt.disabled=true;
-      opt.textContent=`${time} (예약됨)`;
-    } else available=true;
-    timeSelect.appendChild(opt);
-  });
-  reserveBtn.disabled=!available;
-}
-
-/* 토스트 */
-function showToast(msg){
-  const toast=document.createElement("div");
-  toast.className="toast";
-  toast.textContent=msg;
-  document.body.appendChild(toast);
-  setTimeout(()=>toast.remove(),3000);
-}
-
-/* 예약 */
-reserveBtn.onclick=()=>{
-  const t=trainers[currentTrainer];
-  if(!selectedDate)return showToast("날짜를 선택하세요!");
-  const time=timeSelect.value;
-  if(!time)return showToast("시간을 선택하세요!");
-  if(bookings.find(b=>b.trainer===t.name&&b.date===selectedDate&&b.time===time))return showToast("이미 예약된 시간입니다!");
-  const user=prompt("예약자 이름을 입력하세요:");
-  if(!user)return;
-  bookings.push({trainer:t.name,user,date:selectedDate,time});
-  showToast(`${t.name}님과 ${selectedDate} ${time} 예약 완료!`);
-  renderCalendar();
-  updateTimeOptions();
-};
-
 renderCalendar();
+
+/* ✅ 모든 모달 닫기 */
+function closeAllModals(){
+  document.querySelectorAll('.modal').forEach(m=>m.style.display='none');
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  document.querySelectorAll('.modal button').forEach(btn=>{
+    btn.addEventListener('click',closeAllModals);
+  });
+});
 </script>
 </body>
 </html>
