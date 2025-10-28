@@ -329,11 +329,27 @@ startBtn.addEventListener("click", async () => {
   if(!id || !nick) return showToast("고번과 닉네임을 입력하세요!");
 
   currentUser = { id, nick };
-  try{
-    await setDoc(doc(db,"users",id),{
+  try {
+    // 기존 setDoc
+    await setDoc(doc(db,"users",id), {
       nickname:nick, role:"member", updatedAt: serverTimestamp()
     }, { merge:true });
 
+    // 🔹 Firestore에서 isAdminVisible 여부 확인
+    const userRef = doc(db, "users", id);
+    const userSnap = await getDoc(userRef);
+
+    let isVisible = false;
+    if (userSnap.exists()) {
+      const data = userSnap.data();
+      isVisible = !!data.isAdminVisible; // true일 때만 표시
+    }
+
+    // 🔹 버튼 표시 설정
+    const adminBtn = document.getElementById("adminBtn");
+    adminBtn.style.display = isVisible ? "block" : "none";
+
+    // 🔹 인트로 → 메인 화면 전환
     intro.style.opacity="0";
     intro.setAttribute("aria-hidden","true");
     setTimeout(()=>{
@@ -345,12 +361,11 @@ startBtn.addEventListener("click", async () => {
     await fetchBookings();
     await loadNoticesForUsers();
     showTrainer(currentTrainer);
-  }catch(e){
+  } catch(e) {
     console.error(e);
     showToast("로그인 중 오류가 발생했습니다.");
   }
 });
-
 /* =======================
       트레이너/캘린더
 ======================= */
@@ -955,6 +970,7 @@ init();
 </script>
 </body>
 </html>
+
 
 
 
