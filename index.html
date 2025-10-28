@@ -6,8 +6,8 @@
 <title>PT 트레이너 예약 시스템</title>
 <style>
 :root {
-  --bg:#FFF2E0; /* 따뜻한 배경 */
-  --card:#FFF8EE;
+  --bg:#FFDEB3; /* 따뜻한 살구빛 배경 */
+  --card:#FFF3E0;
   --accent:#f97316;
   --grad:linear-gradient(135deg,#ffb77a,#f97316,#ea580c);
   --ink:#2b1d12;
@@ -93,14 +93,13 @@ h2.title{
 .day.disabled{color:var(--disabled);opacity:0.5;cursor:not-allowed;background:rgba(255,255,255,0.4);}
 .day.today{outline:1px dashed var(--accent);}
 
-/* 🍊 귀엽고 따뜻한 시간 선택 & 예약 버튼 디자인 */
+/* 시간 선택 및 예약 버튼 세로 정렬 */
 .time-select-area {
-  margin-top: 28px;
+  margin-top: 30px;
   display: flex;
-  flex-wrap: wrap;
-  gap: 14px;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
+  gap: 14px;
   animation: fadePop .6s ease;
 }
 @keyframes fadePop {
@@ -110,8 +109,7 @@ h2.title{
 
 /* select */
 .time-select-area select {
-  flex: 1;
-  min-width: 200px;
+  width: 80%;
   background: #fffaf3;
   border: 2px solid #ffd6a5;
   border-radius: 16px;
@@ -132,11 +130,13 @@ h2.title{
   border-color: #f97316;
   box-shadow: 0 0 10px rgba(249,115,22,0.3);
 }
+.time-select-area option[disabled] {
+  color: var(--disabled);
+}
 
 /* 예약 버튼 */
 button.reserve-btn {
-  flex: 1;
-  min-width: 200px;
+  width: 80%;
   background: var(--grad);
   color: #fff;
   border: none;
@@ -223,8 +223,6 @@ button.reserve-btn:active {
     <div class="time-select-area">
       <select id="timeSelect">
         <option value="">시간 선택</option>
-        <option>10:00</option><option>12:00</option>
-        <option>14:00</option><option>16:00</option><option>18:00</option>
       </select>
       <button class="reserve-btn" id="reserveBtn">예약하기</button>
     </div>
@@ -239,10 +237,10 @@ document.getElementById("startBtn").onclick=()=>{intro.style.opacity="0";setTime
 
 /* 트레이너 */
 const trainers=[
-  {name:"트레이너 A",photo:"https://via.placeholder.com/260x180?text=A",intro:"체형 교정 전문가",code:"PT-001"},
-  {name:"트레이너 B",photo:"https://via.placeholder.com/260x180?text=B",intro:"다이어트 코치",code:"PT-002"},
-  {name:"트레이너 C",photo:"https://via.placeholder.com/260x180?text=C",intro:"근력 향상 전문가",code:"PT-003"},
-  {name:"트레이너 D",photo:"https://via.placeholder.com/260x180?text=D",intro:"재활 트레이너",code:"PT-004"}
+  {name:"트레이너 A",photo:"https://via.placeholder.com/260x180?text=A",intro:"체형 교정 전문가"},
+  {name:"트레이너 B",photo:"https://via.placeholder.com/260x180?text=B",intro:"다이어트 코치"},
+  {name:"트레이너 C",photo:"https://via.placeholder.com/260x180?text=C",intro:"근력 향상 전문가"},
+  {name:"트레이너 D",photo:"https://via.placeholder.com/260x180?text=D",intro:"재활 트레이너"}
 ];
 let currentTrainer=0;
 const trainerCard=document.getElementById("trainerCard");
@@ -255,6 +253,9 @@ document.getElementById("nextBtn").onclick=()=>{currentTrainer=(currentTrainer+1
 const bookings=[{trainer:"트레이너 A",user:"홍길동",date:"2025-10-15",time:"14:00"}];
 const calendar=document.getElementById("calendar");
 let selectedDate=null;
+const timeSelect=document.getElementById("timeSelect");
+const baseTimes=["10:00","12:00","14:00","16:00","18:00"];
+
 function renderCalendar(){
   calendar.innerHTML="";
   const now=new Date();
@@ -280,9 +281,29 @@ function renderCalendar(){
       document.querySelectorAll(".day").forEach(c=>c.classList.remove("selected"));
       day.classList.add("selected");
       selectedDate=dateStr;
+      updateTimeOptions();
     };
     calendar.appendChild(day);
   }
+}
+
+/* 예약된 시간 제외 */
+function updateTimeOptions(){
+  timeSelect.innerHTML='<option value="">시간 선택</option>';
+  const t=trainers[currentTrainer];
+  const bookedTimes=bookings
+    .filter(b=>b.trainer===t.name && b.date===selectedDate)
+    .map(b=>b.time);
+  baseTimes.forEach(time=>{
+    const opt=document.createElement("option");
+    opt.textContent=time;
+    opt.value=time;
+    if(bookedTimes.includes(time)){
+      opt.disabled=true;
+      opt.textContent=`${time} (예약됨)`;
+    }
+    timeSelect.appendChild(opt);
+  });
 }
 
 /* 토스트 메시지 */
@@ -298,7 +319,7 @@ function showToast(msg){
 document.getElementById("reserveBtn").onclick=()=>{
   const t=trainers[currentTrainer];
   if(!selectedDate)return showToast("날짜를 선택하세요!");
-  const time=document.getElementById("timeSelect").value;
+  const time=timeSelect.value;
   if(!time)return showToast("시간을 선택하세요!");
   if(bookings.find(b=>b.trainer===t.name&&b.date===selectedDate&&b.time===time))return showToast("이미 예약된 시간입니다!");
   const user=prompt("예약자 이름을 입력하세요:");
@@ -306,6 +327,7 @@ document.getElementById("reserveBtn").onclick=()=>{
   bookings.push({trainer:t.name,user,date:selectedDate,time});
   showToast(`${t.name}님과 ${selectedDate} ${time} 예약 완료!`);
   renderCalendar();
+  updateTimeOptions();
 };
 
 showTrainer(currentTrainer);
