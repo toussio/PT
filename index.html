@@ -392,9 +392,9 @@ function renderCalendar(){
     calendar.appendChild(dayEl);
   }
 }
-
-async function getTimesForTrainerAndDate(trainerName, yyyymmdd){
+  async function getTimesForTrainerAndDate(trainerName, yyyymmdd){
   const weekday = getWeekdayKo(yyyymmdd); // "월"~"일"
+  
   // 1) 트레이너 개별 스케줄
   try{
     const docSnap = await getDoc(doc(db,"trainerSchedule",trainerName));
@@ -403,6 +403,7 @@ async function getTimesForTrainerAndDate(trainerName, yyyymmdd){
       if(Array.isArray(data[weekday]) && data[weekday].length) return data[weekday];
     }
   }catch(e){ console.warn("trainerSchedule read error", e); }
+
   // 2) 관리자 전체 설정
   try{
     const setSnap = await getDoc(doc(db,"settings","trainerTimes"));
@@ -411,17 +412,26 @@ async function getTimesForTrainerAndDate(trainerName, yyyymmdd){
       if(Array.isArray(arr) && arr.length) return arr;
     }
   }catch(e){ console.warn("settings read error", e); }
-  // 3) 기본값
-  return allTimes;
-}
 
+  // ✅ 3) 기본값을 없애고, 비어 있는 배열로 처리
+  // 즉, 관리자 설정 없으면 시간 선택이 비어 있음
+  return [];
+}
 async function updateTimeOptions(){
   timeSelect.innerHTML = '<option value="">시간 선택</option>';
   reserveBtn.disabled = true;
-  if(!selectedDate){ return; }
+  if(!selectedDate) return;
 
   const t = trainers[currentTrainer];
   const availableTimes = await getTimesForTrainerAndDate(t.name, selectedDate);
+
+  if (availableTimes.length === 0) {
+    const opt = document.createElement("option");
+    opt.textContent = "❌ 현재 예약 가능한 시간이 없습니다.";
+    opt.disabled = true;
+    timeSelect.appendChild(opt);
+    return;
+  }
 
   const bookedTimes = bookings
     .filter(b=>b.trainer===t.name && b.date===selectedDate)
@@ -439,7 +449,6 @@ async function updateTimeOptions(){
   });
   reserveBtn.disabled = !hasAvail;
 }
-
 /* 예약 생성 */
 reserveBtn.addEventListener("click", async ()=>{
   if(!currentUser) return showToast("로그인이 필요합니다!");
@@ -905,6 +914,7 @@ init();
 </script>
 </body>
 </html>
+
 
 
 
