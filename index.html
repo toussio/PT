@@ -33,10 +33,19 @@ box-shadow:0 4px 14px rgba(249,115,22,0.3);z-index:1500;transition:all .3s ease;
 
 /* 공지/관리자 모달 */
 .notice-modal,.admin-modal{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:3000;}
-.notice-content,.admin-content{background:#fffaf3;border-radius:16px;padding:30px 40px;max-width:1000px;width:92%;box-shadow:0 10px 25px rgba(0,0,0,0.3);animation:fadePop .5s ease;}
- /* ✅ 스크롤 추가 */
-  max-height:80vh;
-  overflow-y:auto;
+.notice-content,
+.admin-content {
+  background: #fffaf3;
+  border-radius: 16px;
+  padding: 30px 40px;
+  max-width: 1000px;
+  width: 92%;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  animation: fadePop 0.5s ease;
+
+  /* ✅ 스크롤 가능하게 추가 */
+  max-height: 85vh;
+  overflow-y: auto;
 }
 .notice-content h2,.admin-content h2{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-top:0;text-align:center;}
 .notice-content ul{list-style:none;padding:0;margin:10px 0;}
@@ -814,6 +823,7 @@ init();
 </script>
 </body>
 </html>
+
 
 
 
