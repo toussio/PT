@@ -721,6 +721,7 @@ function buildTrainerDayGrid(){
   area.innerHTML = `
     <h3>🕒 나의 시간 설정(트레이너)</h3>
     <p style="margin:6px 0 12px;color:#7b5d49">트레이너와 요일을 선택 후 시간대를 체크하세요.</p>
+
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px">
       <select id="trainerSelect" style="padding:10px;border:2px solid #ffd6a5;border-radius:10px">
         <option value="">트레이너 선택</option>
@@ -731,15 +732,27 @@ function buildTrainerDayGrid(){
         ${daysKo.map(d=>`<option value="${d}">${d}</option>`).join("")}
       </select>
     </div>
-    
-    <!-- 시간칩을 감싸는 박스 -->
-    <div id="timeGrid" style="margin-bottom:16px"></div>
 
-    <!-- ✅ 아래쪽 중앙에 적용 버튼 -->
-    <div style="display:flex;justify-content:center;margin-top:8px">
-      <button id="trainerTimesApply" class="tab-btn" style="padding:10px 20px;font-weight:700;">적용</button>
+    <!-- ✅ 시간칩을 그리드로 표시 -->
+    <div id="timeGrid"
+      style="
+        display:grid;
+        grid-template-columns:repeat(auto-fill,minmax(90px,1fr));
+        gap:10px;
+        margin-bottom:20px;
+      ">
+    </div>
+
+    <!-- ✅ 버튼을 아래쪽 중앙 정렬 -->
+    <div style="text-align:center;">
+      <button id="trainerTimesApply"
+        class="tab-btn"
+        style="padding:10px 24px;font-weight:700;border-radius:10px;background:var(--grad);color:#fff;">
+        적용
+      </button>
     </div>
   `;
+
   const trainerSelect = area.querySelector("#trainerSelect");
   const daySelect = area.querySelector("#daySelect");
   const timeGrid = area.querySelector("#timeGrid");
@@ -750,61 +763,39 @@ function buildTrainerDayGrid(){
     const tName = trainerSelect.value;
     const dName = daySelect.value;
     if(!tName || !dName) return;
-    // 시간칩 그리드 채우기
-    const grid = document.createElement("div");
-    grid.id = "timeGridInner";
-    grid.style.display="grid";
-    grid.style.gridTemplateColumns="repeat(auto-fill,minmax(90px,1fr))";
-    grid.style.gap="10px";
-    grid.style.margin="12px 0 12px";
-
     allTimes.forEach(tm=>{
       const label=document.createElement("label");
       label.className="time-chip";
       label.innerHTML = `<input type="checkbox" value="${tm}"> ${tm}`;
-      grid.appendChild(label);
+      timeGrid.appendChild(label);
     });
-    timeGrid.appendChild(grid);
 
-    // 기존 설정 로드
-    try{
-      const snap = await getDoc(doc(db,"trainerSchedule", tName));
-      if(snap.exists()){
-        const data = snap.data();
-        const arr = Array.isArray(data[dName]) ? data[dName] : [];
-        grid.querySelectorAll("input").forEach(cb=>{
-          cb.checked = arr.includes(cb.value);
-        });
-      }
-    }catch(e){ console.warn(e); }
+    const snap = await getDoc(doc(db,"trainerSchedule", tName));
+    if(snap.exists()){
+      const data = snap.data();
+      const arr = Array.isArray(data[dName]) ? data[dName] : [];
+      timeGrid.querySelectorAll("input").forEach(cb=>{
+        cb.checked = arr.includes(cb.value);
+      });
+    }
   };
 
-  trainerSelect.addEventListener("change", renderTimes);
-  daySelect.addEventListener("change", renderTimes);
+  trainerSelect.onchange = renderTimes;
+  daySelect.onchange = renderTimes;
 
-  applyBtn.addEventListener("click", async ()=>{
+  applyBtn.onclick = async ()=>{
     const tName = trainerSelect.value;
     const dName = daySelect.value;
     if(!tName || !dName) return showToast("트레이너와 요일을 선택하세요!");
     const checkedTimes = Array.from(timeGrid.querySelectorAll("input:checked")).map(i=>i.value);
-    try{
-      const ref = doc(db,"trainerSchedule", tName);
-      const snap = await getDoc(ref);
-      const data = snap.exists()? snap.data() : {};
-      data[dName] = checkedTimes;
-      await setDoc(ref, data, { merge:true });
-      showToast(`✅ ${tName}의 ${dName} 요일 시간 저장 완료`);
-      if(trainers[currentTrainer].name===tName && selectedDate){
-        // 현재 보고 있는 트레이너/날짜에 영향 가능 → 옵션 갱신
-        await updateTimeOptions();
-      }
-    }catch(e){
-      console.error(e);
-      showToast("시간 저장 중 오류가 발생했습니다.");
-    }
-  });
+    const ref = doc(db,"trainerSchedule", tName);
+    const snap = await getDoc(ref);
+    const data = snap.exists()? snap.data() : {};
+    data[dName] = checkedTimes;
+    await setDoc(ref, data, { merge:true });
+    showToast(`✅ ${tName}의 ${dName} 요일 시간 저장 완료`);
+  };
 }
-
 /* =======================
       공지(관리자)
 ======================= */
@@ -909,4 +900,5 @@ init();
 </script>
 </body>
 </html>
+
 
