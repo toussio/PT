@@ -230,42 +230,98 @@ const trainers=[
   {name:"트레이너 D",photo:"https://via.placeholder.com/260x180?text=D",intro:"재활 트레이너"}
 ];
 let currentTrainer=0;
-const trainerCard=document.getElementById("trainerCard");
+
+/* 카드 2개 (앞/뒤) 준비 */
+const trainerSection=document.querySelector(".trainer-section");
+trainerSection.innerHTML = `
+  <div class="trainer-card front-card" id="frontCard"></div>
+  <div class="trainer-card back-card" id="backCard"></div>
+`;
+
+const frontCard=document.getElementById("frontCard");
+const backCard=document.getElementById("backCard");
 const trainerTitle=document.getElementById("trainerTitle");
 
-/* 드래그 감지 */
-let startX=0;
-let endX=0;
-trainerCard.addEventListener("mousedown",e=>{startX=e.clientX;});
-trainerCard.addEventListener("mouseup",e=>{
-  endX=e.clientX;
-  handleSwipe();
-});
-trainerCard.addEventListener("touchstart",e=>{startX=e.touches[0].clientX;});
-trainerCard.addEventListener("touchend",e=>{
-  endX=e.changedTouches[0].clientX;
-  handleSwipe();
-});
-function handleSwipe(){
-  const diff=endX-startX;
-  if(Math.abs(diff)<80)return; // 80px 이상 이동해야 스와이프 처리
-  if(diff<0){ // 왼쪽 스와이프
-    currentTrainer=(currentTrainer+1)%trainers.length;
-  } else { // 오른쪽 스와이프
-    currentTrainer=(currentTrainer-1+trainers.length)%trainers.length;
+function setTrainerContent(card, index){
+  const t=trainers[index];
+  card.innerHTML=`<img src="${t.photo}"><h3>${t.name}</h3><p>${t.intro}</p>`;
+}
+
+/* 초기 표시 */
+setTrainerContent(frontCard, currentTrainer);
+trainerTitle.textContent=`${trainers[currentTrainer].name} 일정`;
+
+/* 드래그 관련 */
+let startX=0, currentX=0, isDragging=false;
+
+function updateBackCard(direction){
+  let nextIdx;
+  if(direction==="left") nextIdx=(currentTrainer+1)%trainers.length;
+  else nextIdx=(currentTrainer-1+trainers.length)%trainers.length;
+  setTrainerContent(backCard, nextIdx);
+  backCard.style.opacity=0.4;
+  backCard.style.transform=`translateX(${direction==="left"? "100%" : "-100%"}) scale(0.95)`;
+}
+
+/* 공통 드래그 함수 */
+function onDragStart(x){
+  isDragging=true;
+  startX=x;
+  frontCard.style.transition="none";
+  backCard.style.transition="none";
+}
+function onDragMove(x){
+  if(!isDragging)return;
+  currentX=x;
+  const diff=currentX-startX;
+  const dir = diff<0?"left":"right";
+  updateBackCard(dir);
+  frontCard.style.transform=`translateX(${diff}px) rotate(${diff/40}deg)`;
+  backCard.style.transform=`translateX(${diff<0?diff+280:diff-280}px) scale(0.95)`;
+  backCard.style.opacity=Math.min(0.5,Math.abs(diff)/300);
+}
+function onDragEnd(x){
+  if(!isDragging)return;
+  isDragging=false;
+  const diff=x-startX;
+  const abs=Math.abs(diff);
+  frontCard.style.transition="transform .4s ease";
+  backCard.style.transition="transform .4s ease, opacity .4s ease";
+  if(abs>100){
+    // 방향 결정
+    const dir = diff<0?"left":"right";
+    frontCard.style.transform=`translateX(${dir==="left"?"-120%":"120%"}) rotate(${dir==="left"?"-10deg":"10deg"})`;
+    backCard.style.transform="translateX(0) scale(1)";
+    backCard.style.opacity=1;
+    setTimeout(()=>{
+      currentTrainer = dir==="left" ? (currentTrainer+1)%trainers.length : (currentTrainer-1+trainers.length)%trainers.length;
+      const temp=frontCard.innerHTML;
+      frontCard.innerHTML=backCard.innerHTML;
+      backCard.style.transition="none";
+      backCard.style.opacity=0;
+      backCard.style.transform="translateX(0)";
+      trainerTitle.textContent=`${trainers[currentTrainer].name} 일정`;
+      renderCalendar();
+    },400);
+  }else{
+    // 복귀
+    frontCard.style.transform="translateX(0)";
+    backCard.style.transform=`translateX(${diff<0?"100%":"-100%"}) scale(0.95)`;
+    backCard.style.opacity=0;
   }
-  showTrainer(currentTrainer);
-  renderCalendar();
 }
 
-/* 트레이너 표시 */
-function showTrainer(i){
-  const t=trainers[i];
-  trainerCard.innerHTML=`<img src="${t.photo}"><h3>${t.name}</h3><p>${t.intro}</p>`;
-  trainerTitle.textContent=`${t.name} 일정`;
-}
+/* PC 이벤트 */
+frontCard.addEventListener("mousedown",e=>onDragStart(e.clientX));
+window.addEventListener("mousemove",e=>{if(isDragging)onDragMove(e.clientX);});
+window.addEventListener("mouseup",e=>onDragEnd(e.clientX));
 
-/* 예약 데이터 */
+/* 모바일 이벤트 */
+frontCard.addEventListener("touchstart",e=>onDragStart(e.touches[0].clientX));
+frontCard.addEventListener("touchmove",e=>onDragMove(e.touches[0].clientX));
+frontCard.addEventListener("touchend",e=>onDragEnd(e.changedTouches[0].clientX));
+
+/* 예약 관련 */
 const bookings=[{trainer:"트레이너 A",user:"홍길동",date:"2025-10-15",time:"14:00"}];
 const calendar=document.getElementById("calendar");
 let selectedDate=null;
@@ -349,7 +405,6 @@ reserveBtn.onclick=()=>{
   updateTimeOptions();
 };
 
-showTrainer(currentTrainer);
 renderCalendar();
 </script>
 </body>
