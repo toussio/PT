@@ -258,24 +258,27 @@ let bookings = []; // {id, userId, nickname, trainer, date, time, status, create
 
 const trainers = [
   {name:"쵸비",photo:"https://i.imgur.com/YomGIwi.jpeg/260x180?text=A",intro:"회원님 기다리는중..🐥"},
-  {name:"청하",photo:"https://i.postimg.cc/L5TKFkSD/image.png/260x180?text=B",intro:"다이어트 코치"},
-  {name:"민쵸",photo:"https://i.postimg.cc/L5TKFkSD/image.png/260x180?text=C",intro:"근력 향상 전문가"},
+  {name:"청하",photo:"https://i.imgur.com/n2SeItj.png/260x180?text=B",intro:"말 안 걸면 유튜브 보러감 ㅅㄱ"},
+  {name:"민쵸",photo:"https://i.imgur.com/0izCNbT.png/260x180?text=C",intro:"민트초코 좋아하세요? 저도 좋아해요.. 회원님을❤"},
   {name:"푸른하늘",photo:"https://i.imgur.com/ZclMIE5.png/260x180?text=D",intro:"체형 분석 기반 하체 전문 PT로 탄력 있는 힙라인 완성! 1대1 맞춤 상담으로 힙 성장 도와드립니다."},
   {name:"키위믹스",photo:"https://i.imgur.com/mCuwI4l.png/260x180?text=D",intro:"남자 예약 사절"},
-  {name:"챠비",photo:"https://i.imgur.com/zdzA4CN.png/260x180?text=D",intro:"-"},
-  {name:"송실수",photo:"https://i.postimg.cc/L5TKFkSD/image.png/260x180?text=D",intro:"재활 트레이너"},
-  {name:"이재성",photo:"https://i.postimg.cc/L5TKFkSD/image.png/260x180?text=D",intro:"재활 트레이너"},
-  {name:"맥도날드",photo:"https://i.postimg.cc/L5TKFkSD/image.png/260x180?text=D",intro:"재활 트레이너"},
-  {name:"알렉산드론비치",photo:"https://i.postimg.cc/L5TKFkSD/image.png/260x180?text=D",intro:"재활 트레이너"},
-  {name:"장덕춘",photo:"https://i.postimg.cc/L5TKFkSD/image.png/260x180?text=D",intro:"재활 트레이너"},
-  {name:"영원",photo:"https://i.postimg.cc/L5TKFkSD/image.png/260x180?text=D",intro:"재활 트레이너"},
-  {name:"세상은",photo:"https://i.postimg.cc/L5TKFkSD/image.png/260x180?text=D",intro:"재활 트레이너"},
-  {name:"김창완",photo:"https://i.postimg.cc/L5TKFkSD/image.png/260x180?text=D",intro:"재활 트레이너"},
-  {name:"가마니",photo:"https://i.postimg.cc/L5TKFkSD/image.png/260x180?text=D",intro:"재활 트레이너"},
-  {name:"우끼",photo:"https://i.postimg.cc/L5TKFkSD/image.png/260x180?text=D",intro:"재활 트레이너"},
-  {name:"보보",photo:"https://i.postimg.cc/L5TKFkSD/image.png/260x180?text=D",intro:"재활 트레이너"},
-  {name:"목성",photo:"https://i.postimg.cc/L5TKFkSD/image.png/260x180?text=D",intro:"재활 트레이너"},
+  {name:"챠비",photo:"https://i.imgur.com/t7PqDf4.png/260x180?text=D",intro:"여자 환영"},
+  {name:"송실수",photo:"https://i.imgur.com/NNzElX5.png/260x180?text=D",intro:"-"},
+  {name:"이재성",photo:"https://i.imgur.com/NNzElX5.png/260x180?text=D",intro:"-"},
+  {name:"맥도날드",photo:"https://i.imgur.com/NNzElX5.png/260x180?text=D",intro:"-"},
+  {name:"알렉산드론비치",photo:"https://i.imgur.com/NNzElX5.png/260x180?text=D",intro:"-"},
+  {name:"장덕춘",photo:"https://i.imgur.com/NNzElX5.png/260x180?text=D",intro:"-"},
+  {name:"영원",photo:"https://i.imgur.com/NNzElX5.png/260x180?text=D",intro:"-"},
+  {name:"세상은",photo:"https://i.imgur.com/NNzElX5.png/260x180?text=D",intro:"-"},
+  {name:"김창완",photo:"https://i.imgur.com/NNzElX5.png/260x180?text=D",intro:"-"},
+  {name:"가마니",photo:"https://i.imgur.com/NNzElX5.png/260x180?text=D",intro:"-"},
+  {name:"우끼",photo:"https://i.imgur.com/NNzElX5.png/260x180?text=D",intro:"-"},
+  {name:"보보",photo:"https://i.imgur.com/NNzElX5.png/260x180?text=D",intro:"-"},
+  {name:"목성",photo:"https://i.imgur.com/NNzElX5.png/260x180?text=D",intro:"-"},
   {name:"삼칠",photo:"https://i.imgur.com/mvRH56d.png/260x180?text=D",intro:"운동도 음악처럼"},
+  {name:"오영택",photo:"https://i.imgur.com/vVtah2J.png/260x180?text=D",intro:"근손실 막는 법? 저를 하루 한 번 보면 됩니다"},
+  {name:"옥장판",photo:"https://i.imgur.com/mvRH56d.png/260x180?text=D",intro:"운동도 음악처럼"},
+  {name:"빈센트",photo:"https://i.imgur.com/KOqaFQO.png/260x180?text=D",intro:"운동 하시는 동안 지루하지않나요?당신의 지루함을 없애고 싶다면 저를 골라주세요 ps 투머치토커 주의, 남성 알레르기 보유, 미스터리 남"}
 ];
 
 const allTimes = Array.from({length:24},(_,i)=>`${String(i).padStart(2,"0")}:00`);
@@ -1077,5 +1080,6 @@ async function showMyReservationModal(dateStr){
 </script>
 </body>
 </html>
+
 
 
