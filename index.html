@@ -422,27 +422,40 @@ function showTrainer(i){
 
 function renderCalendar(){
   calendar.innerHTML = "";
-  const now=new Date();
-  const todayZero=new Date(now.getFullYear(),now.getMonth(),now.getDate());
-  const y=now.getFullYear(), m=now.getMonth();
-  const fd=new Date(y,m,1), ld=new Date(y,m+1,0);
+  const now = new Date();
+  const todayZero = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const y = now.getFullYear(), m = now.getMonth();
+  const fd = new Date(y, m, 1), ld = new Date(y, m + 1, 0);
 
-  // 빈칸
+  // ✅ 이번 주의 시작(일요일)과 끝(토요일) 계산
+  const startOfWeek = new Date(todayZero);
+  startOfWeek.setDate(todayZero.getDate() - todayZero.getDay());
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(startOfWeek.getDate() + 6);
+
+  // 빈칸 채우기
   for(let i=0;i<fd.getDay();i++){
-    const sp=document.createElement("div"); calendar.appendChild(sp);
+    const sp=document.createElement("div");
+    calendar.appendChild(sp);
   }
-  for(let d=1;d<=ld.getDate();d++){
-    const dateObj=new Date(y,m,d);
-    const dateStr = `${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
-    const dayEl=document.createElement("div");
-    dayEl.className="day"; dayEl.textContent=d;
 
-    if(dateObj < todayZero) dayEl.classList.add("disabled");
+  for(let d=1; d<=ld.getDate(); d++){
+    const dateObj = new Date(y, m, d);
+    const dateStr = `${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+    const dayEl = document.createElement("div");
+    dayEl.className = "day";
+    dayEl.textContent = d;
+
+    // ✅ 이전 날짜 및 이번 주 범위 밖은 비활성화
+    if(dateObj < todayZero || dateObj < startOfWeek || dateObj > endOfWeek){
+      dayEl.classList.add("disabled");
+    }
+
     const hasBooking = bookings.some(b=>b.trainer===trainers[currentTrainer].name && b.date===dateStr);
     if(hasBooking) dayEl.classList.add("booked");
 
     dayEl.addEventListener("click", () => {
-      if(dayEl.classList.contains("disabled")) return showToast("이전 날짜는 예약 불가");
+      if(dayEl.classList.contains("disabled")) return showToast("이번 주만 예약 가능합니다!");
       document.querySelectorAll(".day").forEach(c=>c.classList.remove("selected"));
       dayEl.classList.add("selected");
       selectedDate = dateStr;
@@ -452,6 +465,7 @@ function renderCalendar(){
     calendar.appendChild(dayEl);
   }
 }
+
   async function getTimesForTrainerAndDate(trainerName, yyyymmdd){
   const weekday = getWeekdayKo(yyyymmdd); // "월"~"일"
   
@@ -1080,6 +1094,7 @@ async function showMyReservationModal(dateStr){
 </script>
 </body>
 </html>
+
 
 
 
