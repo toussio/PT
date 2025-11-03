@@ -532,6 +532,17 @@ reserveBtn.addEventListener("click", async ()=>{
   const time = timeSelect.value;
   if(!time) return showToast("시간을 선택하세요!");
 
+  // 🔹 현재 시간과 비교 (예약 시간 30분 전이면 예약 불가)
+  const now = new Date();
+  const [h, m] = time.split(":").map(Number);
+  const reserveDate = new Date(selectedDate);
+  reserveDate.setHours(h, m, 0, 0);
+
+  const diffMin = (reserveDate - now) / 60000; // 분 단위 차이
+  if(diffMin <= 30) {
+    return showToast("🚫 예약 시간 30분 전에는 예약이 불가능합니다!");
+  }
+
   const t = trainers[currentTrainer];
   const dup = bookings.find(b=>b.trainer===t.name && b.date===selectedDate && b.time===time);
   if(dup) return showToast("이미 예약된 시간입니다!");
@@ -541,8 +552,8 @@ reserveBtn.addEventListener("click", async ()=>{
       userId: currentUser.id,
       nickname: currentUser.nick,
       trainer: t.name,
-      date: selectedDate,         // "YYYY-MM-DD"
-      time,                       // "HH:00"
+      date: selectedDate,
+      time,
       status: "reserved",
       createdAt: serverTimestamp()
     });
@@ -1096,6 +1107,7 @@ async function showMyReservationModal(dateStr){
 </script>
 </body>
 </html>
+
 
 
 
